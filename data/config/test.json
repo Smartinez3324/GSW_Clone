@@ -1,0 +1,36 @@
+{
+  "0": {
+    "fields": {
+      "A": {
+        "type": "int16",
+        "endian": "little"
+      },
+      "B": {
+        "type": "uint32",
+        "endian": "little",
+        "padding": 2
+      },
+      "C": {
+        "type": "float",
+        "endian": "little"
+      }
+    }
+  },
+  "1": {
+    "fields": {
+      "D": {
+        "type": "uint8",
+        "endian": "big",
+        "padding": 3
+      },
+      "E": {
+        "type": "uint16",
+        "endian": "big"
+      },
+      "F": {
+        "type": "float",
+        "endian": "big"
+      }
+    }
+  }
+}

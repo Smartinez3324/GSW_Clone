@@ -21,5 +21,5 @@ func printWithTabbing(level int, text string) {
 }
 
 func main() {
-	proc.ParseConfiguration("data/config/test.json")
+	fmt.Println(proc.ParseConfiguration("data/config/test.json"))
 }

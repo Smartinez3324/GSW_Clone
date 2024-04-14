@@ -1,4 +1,4 @@
-package vcm
+package proc
 
 import (
 	"encoding/json"
@@ -7,8 +7,13 @@ import (
 	"os"
 )
 
-type TelemetryPacketInfo struct {
-	Name string
+type TelemetryPacket struct {
+	Fields map[string]TelemetryPacketField
+}
+
+type TelemetryPacketField struct {
+	Type   interface{}
+	Endian string
 }
 
 type telemetryConfiguration struct {
@@ -20,7 +25,7 @@ type telemetryConfigurationField struct {
 	Endian string `json:"endian"`
 }
 
-func ParseConfiguration(filename string) []TelemetryPacketInfo {
+func ParseConfiguration(filename string) []TelemetryPacket {
 	file, _ := os.Open(filename)
 
 	defer func(file *os.File) {
@@ -40,7 +45,6 @@ func ParseConfiguration(filename string) []TelemetryPacketInfo {
 		return nil
 	}
 
-	fmt.Println(config)
-
-	return nil
+	var packets []TelemetryPacket
+	return packets
 }

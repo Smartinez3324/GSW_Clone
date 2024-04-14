@@ -12,8 +12,9 @@ type TelemetryPacket struct {
 }
 
 type TelemetryPacketField struct {
-	Type   string `json:"type"`
-	Endian string `json:"endian"`
+	Type    string `json:"type"`
+	Endian  string `json:"endian"`
+	Padding int    `json:"padding"`
 }
 
 func ParseConfiguration(filename string) map[string]TelemetryPacket {

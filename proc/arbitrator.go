@@ -1,5 +1,5 @@
 package proc
 
-func helloWorld() {
+func HelloWorld() {
 	print("Hello, World!")
 }

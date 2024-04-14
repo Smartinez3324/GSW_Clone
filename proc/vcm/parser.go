@@ -1,4 +1,4 @@
-package proc
+package vcm
 
 import (
 	"encoding/json"
@@ -7,17 +7,8 @@ import (
 	"os"
 )
 
-// TelemetryPacketInfo Information about a telemetry packet
 type TelemetryPacketInfo struct {
-	Port   uint16               // Port number of the telemetry packet
-	Fields []TelemetryFieldInfo // Information about the fields in the telemetry packet
-}
-
-// TelemetryFieldInfo Information about a telemetry field in a telemetry packet
-type TelemetryFieldInfo struct {
-	Name   string
-	Type   interface{}
-	Endian string
+	Name string
 }
 
 type telemetryConfiguration struct {

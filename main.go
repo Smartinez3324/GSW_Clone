@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/AarC10/GSW-V2/proc"
+	"github.com/AarC10/GSW-V2/proc/vcm"
 	"strings"
 )
 
@@ -21,5 +21,5 @@ func printWithTabbing(level int, text string) {
 }
 
 func main() {
-	proc.ParseConfiguration("data/config/test.json")
+	vcm.ParseConfiguration("data/config/test.json")
 }

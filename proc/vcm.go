@@ -1,14 +1,14 @@
 package proc
 
 import (
-	"bufio"
+	"encoding/json"
 	"fmt"
+	"io"
 	"os"
 )
 
 // TelemetryPacketInfo Information about a telemetry packet
 type TelemetryPacketInfo struct {
-	Name   string               // Name of the telemetry packet
 	Port   uint16               // Port number of the telemetry packet
 	Fields []TelemetryFieldInfo // Information about the fields in the telemetry packet
 }
@@ -19,7 +19,19 @@ type TelemetryFieldInfo struct {
 	Endian string
 }
 
-func Parser(filename string) []TelemetryPacketInfo {
+// TelemetryPacketInfo Information about a telemetry packet
+type telemetryPacketConfig struct {
+	Port   uint16                     // Port number of the telemetry packet
+	Fields []telemetryFieldInfoConfig // Information about the fields in the telemetry packet
+}
+
+// telemetryFieldInfoConfig Configuration structure meant for unmarshalling JSON
+type telemetryFieldInfoConfig struct {
+	Type   string
+	Endian string
+}
+
+func ParseConfiguration(filename string) []TelemetryPacketInfo {
 	file, _ := os.Open(filename)
 
 	defer func(file *os.File) {
@@ -29,10 +41,21 @@ func Parser(filename string) []TelemetryPacketInfo {
 		}
 	}(file)
 
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		fmt.Println(scanner.Text())
+	jsonStr, _ := io.ReadAll(file)
+
+	info := new(telemetryPacketConfig)
+
+	err := json.Unmarshal(jsonStr, &info)
+	if err != nil {
+		fmt.Println("Error unmarshalling JSON")
+		return nil
 	}
 
-	return []TelemetryPacketInfo{}
+	fmt.Println(info.Port)
+	for _, field := range info.Fields {
+		fmt.Println(field.Type)
+		fmt.Println(field.Endian)
+	}
+
+	return nil
 }

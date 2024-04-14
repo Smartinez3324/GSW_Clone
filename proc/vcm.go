@@ -20,15 +20,11 @@ type TelemetryFieldInfo struct {
 	Endian string
 }
 
-// TelemetryPacketInfo Information about a telemetry packet
-type telemetryPacketConfig struct {
-	Port   uint16
-	Fields []telemetryFieldInfoConfig
+type telemetryConfiguration struct {
+	Fields map[string]telemetryConfigurationField `json:"fields"`
 }
 
-// telemetryFieldInfoConfig Configuration structure meant for unmarshalling JSON
-type telemetryFieldInfoConfig struct {
-	Name   string `json:"name"`
+type telemetryConfigurationField struct {
 	Type   string `json:"type"`
 	Endian string `json:"endian"`
 }
@@ -45,19 +41,15 @@ func ParseConfiguration(filename string) []TelemetryPacketInfo {
 
 	jsonStr, _ := io.ReadAll(file)
 
-	info := new(telemetryPacketConfig)
+	var config map[string]telemetryConfiguration
 
-	err := json.Unmarshal(jsonStr, &info)
+	err := json.Unmarshal(jsonStr, &config)
 	if err != nil {
-		fmt.Println("Error unmarshalling JSON")
+		fmt.Println("Error:", err)
 		return nil
 	}
 
-	fmt.Println(info.Port)
-	for _, field := range info.Fields {
-		fmt.Println(field.Type)
-		fmt.Println(field.Endian)
-	}
+	fmt.Println(config)
 
 	return nil
 }

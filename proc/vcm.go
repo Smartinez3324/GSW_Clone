@@ -2,26 +2,21 @@ package proc
 
 import (
 	"bufio"
-	"encoding/binary"
 	"fmt"
 	"os"
 )
 
 // TelemetryPacketInfo Information about a telemetry packet
 type TelemetryPacketInfo struct {
-	name   string               // Name of the telemetry packet
-	port   uint16               // Port number of the telemetry packet
-	fields []TelemetryFieldInfo // Information about the fields in the telemetry packet
+	Name   string               // Name of the telemetry packet
+	Port   uint16               // Port number of the telemetry packet
+	Fields []TelemetryFieldInfo // Information about the fields in the telemetry packet
 }
 
 // TelemetryFieldInfo Information about a telemetry field in a telemetry packet
 type TelemetryFieldInfo struct {
-	name       string           // Name of the telemetry data
-	size       uint16           // Size of the telemetry data in bytes
-	padding    uint16           // Number of padding bytes
-	endianness binary.ByteOrder // Endianness of the telemetry data
-	signed     bool             // Whether the telemetry data is signed
-	dataType   interface{}      // Data type of the telemetry data
+	Type   interface{}
+	Endian string
 }
 
 func Parser(filename string) []TelemetryPacketInfo {

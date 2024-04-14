@@ -15,20 +15,22 @@ type TelemetryPacketInfo struct {
 
 // TelemetryFieldInfo Information about a telemetry field in a telemetry packet
 type TelemetryFieldInfo struct {
+	Name   string
 	Type   interface{}
 	Endian string
 }
 
 // TelemetryPacketInfo Information about a telemetry packet
 type telemetryPacketConfig struct {
-	Port   uint16                     // Port number of the telemetry packet
-	Fields []telemetryFieldInfoConfig // Information about the fields in the telemetry packet
+	Port   uint16
+	Fields []telemetryFieldInfoConfig
 }
 
 // telemetryFieldInfoConfig Configuration structure meant for unmarshalling JSON
 type telemetryFieldInfoConfig struct {
-	Type   string
-	Endian string
+	Name   string `json:"name"`
+	Type   string `json:"type"`
+	Endian string `json:"endian"`
 }
 
 func ParseConfiguration(filename string) []TelemetryPacketInfo {

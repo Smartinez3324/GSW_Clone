@@ -7,9 +7,25 @@
       },
       "B": {
         "type": "uint32",
-        "endian": "big"
+        "endian": "little"
       },
       "C": {
+        "type": "float",
+        "endian": "little"
+      }
+    }
+  },
+  "1": {
+    "fields": {
+      "D": {
+        "type": "uint8",
+        "endian": "big"
+      },
+      "E": {
+        "type": "uint16",
+        "endian": "big"
+      },
+      "F": {
         "type": "float",
         "endian": "big"
       }

@@ -5,16 +5,6 @@ import (
 	"github.com/AarC10/GSW-V2/proc"
 )
 
-func main() {
-	cfg, err := proc.ParseYAML("data/config/backplane.yaml")
-	if err != nil {
-		fmt.Printf("Error parsing YAML: %v\n", err)
-		return
-	}
-
-	printTelemetryPackets(cfg)
-}
-
 func printTelemetryPackets(cfg *proc.Configuration) {
 	fmt.Println("Telemetry Packets:")
 	for _, packet := range cfg.TelemetryPackets {
@@ -42,4 +32,14 @@ func findMeasurementByName(measurements []proc.Measurement, name string) (*proc.
 		}
 	}
 	return nil, fmt.Errorf("measurement '%s' not found", name)
+}
+
+func main() {
+	cfg, err := proc.ParseYAML("data/config/backplane.yaml")
+	if err != nil {
+		fmt.Printf("Error parsing YAML: %v\n", err)
+		return
+	}
+
+	printTelemetryPackets(cfg)
 }

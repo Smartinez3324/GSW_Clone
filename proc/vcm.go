@@ -17,7 +17,7 @@ type Measurement struct {
 	Name       string `yaml:"name"`
 	Size       int    `yaml:"size"`
 	Type       string `yaml:"type,omitempty"`
-	Signed     bool   `yaml:"signed,omitempty"`
+	Unsigned   bool   `yaml:"unsigned,omitempty"`
 	Endianness string `yaml:"endianness,omitempty"`
 }
 
@@ -39,6 +39,19 @@ func ParseYAML(filename string) (*Configuration, error) {
 		return nil, fmt.Errorf("error parsing YAML: %v", err)
 	}
 
+	// Set default values for measurements if not specified
+	for i := range cfg.Measurements {
+		if cfg.Measurements[i].Name == "" {
+			return nil, fmt.Errorf("Measurement name missing")
+		}
+
+		if cfg.Measurements[i].Endianness == "" {
+			cfg.Measurements[i].Endianness = "big" // Default to big endian
+		} else if cfg.Measurements[i].Endianness != "little" && cfg.Measurements[i].Endianness != "big" {
+			return nil, fmt.Errorf("Endianess not specified as big or little got %s", cfg.Measurements[i].Endianness)
+		}
+	}
+
 	return &cfg, nil
 }
 
@@ -48,10 +61,11 @@ func (m Measurement) String() string {
 	if m.Type != "" {
 		sb.WriteString(fmt.Sprintf(", Type: %s", m.Type))
 	}
-	if m.Signed {
-		sb.WriteString(", Signed")
-	} else {
+
+	if m.Unsigned {
 		sb.WriteString(", Unsigned")
+	} else {
+		sb.WriteString(", Signed")
 	}
 	sb.WriteString(fmt.Sprintf(", Endianness: %s", m.Endianness))
 	return sb.String()

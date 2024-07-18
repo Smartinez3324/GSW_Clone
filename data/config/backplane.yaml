@@ -85,17 +85,16 @@ measurements:
   - name: ADXL375_X
     size: 4
     type: float
-    signed: true
-    endianness: little
   - name: ADXL375_Y
     size: 4
     type: float
-    signed: true
-    endianness: little
+    endianness: big
   - name: ADXL375_Z
     size: 4
     type: float
-    signed: true
+  - name: Random
+    type: float
+    unsigned: true
     endianness: little
 
 # Telemetry packets
@@ -106,3 +105,4 @@ telemetry_packets:
       - ADXL375_X
       - ADXL375_Y
       - ADXL375_Z
+      - Random

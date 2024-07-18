@@ -80,10 +80,6 @@ measurements:
   - name: ADXL375_Z
     size: 4
     type: float
-  - name: Random
-    type: float
-    unsigned: true
-    endianness: little
 
 telemetry_packets:
   - name: SensorModule100Hz
@@ -92,4 +88,3 @@ telemetry_packets:
       - ADXL375_X
       - ADXL375_Y
       - ADXL375_Z
-      - Random

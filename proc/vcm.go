@@ -28,33 +28,33 @@ type TelemetryPacket struct {
 }
 
 // TODO: Make global safer
-var Cfg Configuration
+var GswConfig Configuration
 
-func ParseYAML(filename string) (*Configuration, error) {
+func ParseConfig(filename string) (*Configuration, error) {
 	data, err := os.ReadFile(filename)
 	if err != nil {
 		return nil, fmt.Errorf("error reading YAML file: %v", err)
 	}
 
-	err = yaml.Unmarshal(data, &Cfg)
+	err = yaml.Unmarshal(data, &GswConfig)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing YAML: %v", err)
 	}
 
 	// Set default values for measurements if not specified
-	for i := range Cfg.Measurements {
-		if Cfg.Measurements[i].Name == "" {
+	for i := range GswConfig.Measurements {
+		if GswConfig.Measurements[i].Name == "" {
 			return nil, fmt.Errorf("Measurement name missing")
 		}
 
-		if Cfg.Measurements[i].Endianness == "" {
-			Cfg.Measurements[i].Endianness = "big" // Default to big endian
-		} else if Cfg.Measurements[i].Endianness != "little" && Cfg.Measurements[i].Endianness != "big" {
-			return nil, fmt.Errorf("Endianess not specified as big or little got %s", Cfg.Measurements[i].Endianness)
+		if GswConfig.Measurements[i].Endianness == "" {
+			GswConfig.Measurements[i].Endianness = "big" // Default to big endian
+		} else if GswConfig.Measurements[i].Endianness != "little" && GswConfig.Measurements[i].Endianness != "big" {
+			return nil, fmt.Errorf("Endianess not specified as big or little got %s", GswConfig.Measurements[i].Endianness)
 		}
 	}
 
-	return &Cfg, nil
+	return &GswConfig, nil
 }
 
 func FindMeasurementByName(measurements []Measurement, name string) (*Measurement, error) {

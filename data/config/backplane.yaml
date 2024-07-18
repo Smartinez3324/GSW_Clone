@@ -1,0 +1,95 @@
+name: backplane
+
+type_definitions:
+  AccelerometerData:
+    - name: X
+      size: 4
+      type: float
+    - name: Y
+      size: 4
+      type: float
+    - name: Z
+      size: 4
+      type: float
+
+  BarometerData:
+    - name: Pressure
+      size: 4
+      type: float
+    - name: Temperature
+      size: 4
+      type: float
+
+  GyroscopeData:
+    - name: X
+      size: 4
+      type: float
+    - name: Y
+      size: 4
+      type: float
+    - name: Z
+      size: 4
+      type: float
+
+  MagnetometerData:
+    - name: X
+      size: 4
+      type: float
+    - name: Y
+      size: 4
+      type: float
+    - name: Z
+      size: 4
+      type: float
+
+  ShuntData:
+    - name: Current
+      size: 4
+      type: float
+    - name: Voltage
+      size: 4
+      type: float
+    - name: Power
+      size: 4
+      type: float
+
+  GnssPositioningData:
+    - name: Latitude
+      size: 8
+      type: double
+    - name: Longitude
+      size: 8
+      type: double
+    - name: Altitude
+      size: 4
+      type: float
+
+  TemperatureData:
+    - name: Temperature
+      size: 4
+      type: float
+
+measurements:
+  - name: ADXL375_X
+    size: 4
+    type: float
+  - name: ADXL375_Y
+    size: 4
+    type: float
+    endianness: big
+  - name: ADXL375_Z
+    size: 4
+    type: float
+  - name: Random
+    type: float
+    unsigned: true
+    endianness: little
+
+telemetry_packets:
+  - name: SensorModule100Hz
+    port: 10000
+    measurements:
+      - ADXL375_X
+      - ADXL375_Y
+      - ADXL375_Z
+      - Random

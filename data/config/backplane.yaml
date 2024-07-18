@@ -1,0 +1,108 @@
+name: sample_device
+
+triggers: triggers
+
+constants: consts
+
+# Network devices
+network_devices:
+  - name: DEVICE_NAME
+    mode: auto
+    port: 8080
+
+# Type Definitions
+type_definitions:
+  AccelerometerData:
+    - name: X
+      size: 4
+      type: float
+    - name: Y
+      size: 4
+      type: float
+    - name: Z
+      size: 4
+      type: float
+
+  BarometerData:
+    - name: Pressure
+      size: 4
+      type: float
+    - name: Temperature
+      size: 4
+      type: float
+
+  GyroscopeData:
+    - name: X
+      size: 4
+      type: float
+    - name: Y
+      size: 4
+      type: float
+    - name: Z
+      size: 4
+      type: float
+
+  MagnetometerData:
+    - name: X
+      size: 4
+      type: float
+    - name: Y
+      size: 4
+      type: float
+    - name: Z
+      size: 4
+      type: float
+
+  ShuntData:
+    - name: Current
+      size: 4
+      type: float
+    - name: Voltage
+      size: 4
+      type: float
+    - name: Power
+      size: 4
+      type: float
+
+  GnssPositioningData:
+    - name: Latitude
+      size: 8
+      type: double
+    - name: Longitude
+      size: 8
+      type: double
+    - name: Altitude
+      size: 4
+      type: float
+
+  TemperatureData:
+    - name: Temperature
+      size: 4
+      type: float
+
+# Measurements
+measurements:
+  - name: ADXL375_X
+    size: 4
+    type: float
+    signed: true
+    endianness: little
+  - name: ADXL375_Y
+    size: 4
+    type: float
+    signed: true
+    endianness: little
+  - name: ADXL375_Z
+    size: 4
+    type: float
+    signed: true
+    endianness: little
+
+# Telemetry packets
+telemetry_packets:
+  - name: SensorModule100Hz
+    port: 10000
+    measurements:
+      - ADXL375_X
+      - ADXL375_Y
+      - ADXL375_Z

@@ -1,43 +1,58 @@
 package proc
 
 import (
-	"encoding/json"
 	"fmt"
-	"io"
+	"gopkg.in/yaml.v2"
 	"os"
+	"strings"
 )
 
+type Configuration struct {
+	Name             string            `yaml:"name"`
+	Measurements     []Measurement     `yaml:"measurements"`
+	TelemetryPackets []TelemetryPacket `yaml:"telemetry_packets"`
+}
+
+type Measurement struct {
+	Name       string `yaml:"name"`
+	Size       int    `yaml:"size"`
+	Type       string `yaml:"type,omitempty"`
+	Signed     bool   `yaml:"signed,omitempty"`
+	Endianness string `yaml:"endianness,omitempty"`
+}
+
 type TelemetryPacket struct {
-	Fields map[string]TelemetryPacketField `json:"fields"`
+	Name         string   `yaml:"name"`
+	Port         int      `yaml:"port"`
+	Measurements []string `yaml:"measurements"`
 }
 
-type TelemetryPacketField struct {
-	Type    string `json:"type"`
-	Endian  string `json:"endian"`
-	Padding int    `json:"padding"`
-}
-
-func ParseConfiguration(filename string) map[string]TelemetryPacket {
-	// Put file data into memory
-	file, _ := os.Open(filename)
-
-	defer func(file *os.File) {
-		err := file.Close()
-		if err != nil {
-			fmt.Println("Error closing file")
-		}
-	}(file)
-
-	jsonStr, _ := io.ReadAll(file)
-
-	// Convert JSON into map of telemetryConfigurations
-	var config map[string]TelemetryPacket
-
-	err := json.Unmarshal(jsonStr, &config)
+func ParseYAML(filename string) (*Configuration, error) {
+	data, err := os.ReadFile(filename)
 	if err != nil {
-		fmt.Println("Error:", err)
-		return nil
+		return nil, fmt.Errorf("error reading YAML file: %v", err)
 	}
 
-	return config
+	var cfg Configuration
+	err = yaml.Unmarshal(data, &cfg)
+	if err != nil {
+		return nil, fmt.Errorf("error parsing YAML: %v", err)
+	}
+
+	return &cfg, nil
+}
+
+func (m Measurement) String() string {
+	var sb strings.Builder
+	sb.WriteString(fmt.Sprintf("Name: %s, Size: %d", m.Name, m.Size))
+	if m.Type != "" {
+		sb.WriteString(fmt.Sprintf(", Type: %s", m.Type))
+	}
+	if m.Signed {
+		sb.WriteString(", Signed")
+	} else {
+		sb.WriteString(", Unsigned")
+	}
+	sb.WriteString(fmt.Sprintf(", Endianness: %s", m.Endianness))
+	return sb.String()
 }

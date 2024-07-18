@@ -54,6 +54,7 @@ func PacketListener(packet TelemetryPacket, channel chan []byte) {
 		}
 
 		if n == packetSize {
+
 			channel <- buffer[:n] // Send data over channel
 		} else {
 			fmt.Printf("Received packet of incorrect size. Expected: %d, Received: %d\n", packetSize, n)
@@ -61,7 +62,7 @@ func PacketListener(packet TelemetryPacket, channel chan []byte) {
 	}
 }
 
-func EndianessConverter(packet TelemetryPacket, channel chan []byte) {
+func EndianessConverter(packet TelemetryPacket, inChannel chan []byte, outChannel chan []byte) {
 	byteIndicesToSwap := make([][]int, 0)
 
 	startIndice := 0
@@ -80,11 +81,21 @@ func EndianessConverter(packet TelemetryPacket, channel chan []byte) {
 	}
 
 	for {
-		data := <-channel
+		data := <-inChannel
 		for _, byteIndices := range byteIndicesToSwap {
 			byteSwap(data, byteIndices[0], byteIndices[1])
 		}
 
-		fmt.Printf("Received data: %v\n", data)
+		outChannel <- data
+	}
+}
+
+// TODO: Placeholder consumer function. Remove once feature for publishing data is complete
+func TestReceiver(channel chan []byte) {
+	i := 0
+	for {
+		data := <-channel
+		fmt.Printf("Packet %d: %v\n", i, data)
+		i++
 	}
 }

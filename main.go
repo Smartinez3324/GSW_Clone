@@ -35,20 +35,28 @@ func vcmInitialize() {
 	printTelemetryPackets()
 }
 
-func decomInitialize() {
-	channel := make(chan []byte)
-	for _, packet := range proc.GswConfig.TelemetryPackets {
-		go proc.PacketListener(packet, channel)
-		go proc.EndianessConverter(packet, channel)
-	}
-}
+func decomInitialize() map[int]chan []byte {
+	channelMap := make(map[int]chan []byte)
 
-func initialize() {
-	vcmInitialize()
-	decomInitialize()
+	for _, packet := range proc.GswConfig.TelemetryPackets {
+		rcvTelemChannel := make(chan []byte)
+		finalOutputChannel := make(chan []byte)
+		channelMap[packet.Port] = finalOutputChannel
+
+		go proc.PacketListener(packet, rcvTelemChannel)
+		go proc.EndianessConverter(packet, rcvTelemChannel, finalOutputChannel)
+	}
+
+	return channelMap
 }
 
 func main() {
-	initialize()
+	vcmInitialize()
+	channelMap := decomInitialize()
+
+	for _, channel := range channelMap {
+		go proc.TestReceiver(channel)
+	}
+
 	select {}
 }

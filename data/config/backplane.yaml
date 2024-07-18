@@ -1,16 +1,5 @@
-name: sample_device
+name: backplane
 
-triggers: triggers
-
-constants: consts
-
-# Network devices
-network_devices:
-  - name: DEVICE_NAME
-    mode: auto
-    port: 8080
-
-# Type Definitions
 type_definitions:
   AccelerometerData:
     - name: X
@@ -80,7 +69,6 @@ type_definitions:
       size: 4
       type: float
 
-# Measurements
 measurements:
   - name: ADXL375_X
     size: 4
@@ -97,7 +85,6 @@ measurements:
     unsigned: true
     endianness: little
 
-# Telemetry packets
 telemetry_packets:
   - name: SensorModule100Hz
     port: 10000

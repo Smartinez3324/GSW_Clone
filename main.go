@@ -39,9 +39,8 @@ func decomInitialize() {
 	channel := make(chan []byte)
 	for _, packet := range proc.GswConfig.TelemetryPackets {
 		go proc.PacketListener(packet, channel)
+		go proc.EndianessConverter(packet, channel)
 	}
-
-	go proc.ReceiverTest(channel)
 }
 
 func initialize() {

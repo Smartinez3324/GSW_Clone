@@ -18,6 +18,12 @@ func getPacketSize(packet TelemetryPacket) int {
 	return size
 }
 
+func byteSwap(data []byte, startIndex int, stopIndex int) {
+	for i, j := startIndex, stopIndex; i < j; i, j = i+1, j-1 {
+		data[i], data[j] = data[j], data[i]
+	}
+}
+
 func PacketListener(packet TelemetryPacket, channel chan []byte) {
 	packetSize := getPacketSize(packet)
 	fmt.Printf("Packet size for port %d: %d\n", packet.Port, packetSize)
@@ -55,9 +61,30 @@ func PacketListener(packet TelemetryPacket, channel chan []byte) {
 	}
 }
 
-func ReceiverTest(channel chan []byte) {
+func EndianessConverter(packet TelemetryPacket, channel chan []byte) {
+	byteIndicesToSwap := make([][]int, 0)
+
+	startIndice := 0
+	for _, measurementName := range packet.Measurements {
+		measurement, err := FindMeasurementByName(GswConfig.Measurements, measurementName)
+		if err != nil {
+			fmt.Printf("\t\tMeasurement '%s' not found: %v\n", measurementName, err)
+			continue
+		}
+
+		if measurement.Endianness == "little" {
+			byteIndicesToSwap = append(byteIndicesToSwap, []int{startIndice, startIndice + measurement.Size - 1})
+		}
+
+		startIndice += measurement.Size
+	}
+
 	for {
 		data := <-channel
+		for _, byteIndices := range byteIndicesToSwap {
+			byteSwap(data, byteIndices[0], byteIndices[1])
+		}
+
 		fmt.Printf("Received data: %v\n", data)
 	}
 }

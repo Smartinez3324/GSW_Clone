@@ -73,13 +73,15 @@ measurements:
   - name: ADXL375_X
     size: 4
     type: float
+    endianness: little
   - name: ADXL375_Y
     size: 4
     type: float
-    endianness: big
+    endianness: little
   - name: ADXL375_Z
     size: 4
     type: float
+    endianness: little
 
 telemetry_packets:
   - name: SensorModule100Hz

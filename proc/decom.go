@@ -66,6 +66,7 @@ func EndianessConverter(packet TelemetryPacket, inChannel chan []byte, outChanne
 	byteIndicesToSwap := make([][]int, 0)
 
 	startIndice := 0
+	packetSize := 0
 	for _, measurementName := range packet.Measurements {
 		measurement, err := FindMeasurementByName(GswConfig.Measurements, measurementName)
 		if err != nil {
@@ -78,10 +79,14 @@ func EndianessConverter(packet TelemetryPacket, inChannel chan []byte, outChanne
 		}
 
 		startIndice += measurement.Size
+		packetSize += measurement.Size
 	}
 
 	for {
-		data := <-inChannel
+		rcvData := <-inChannel
+		data := make([]byte, packetSize)
+		copy(data, rcvData)
+
 		for _, byteIndices := range byteIndicesToSwap {
 			byteSwap(data, byteIndices[0], byteIndices[1])
 		}

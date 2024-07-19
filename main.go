@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/AarC10/GSW-V2/proc"
+	"time"
 )
 
 func printTelemetryPackets() {
@@ -58,5 +59,7 @@ func main() {
 		go proc.TestReceiver(channel)
 	}
 
-	select {}
+	time.Sleep(3 * time.Second)
+
+	//select {}
 }

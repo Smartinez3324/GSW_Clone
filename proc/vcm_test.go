@@ -45,6 +45,24 @@ func TestParseConfigBadFile(test *testing.T) {
 	}
 }
 
+func TestBadYaml(test *testing.T) {
+	_, err := ParseConfig(TEST_DATA_DIR + "no_name.yaml")
+	if err == nil {
+		test.Errorf("Expected error for no configuration name, got nil")
+	}
+
+	_, err = ParseConfig(TEST_DATA_DIR + "no_meas.yaml")
+	if err == nil {
+		test.Errorf("Expected error for no measurements, got nil")
+	}
+
+	_, err = ParseConfig(TEST_DATA_DIR + "no_telem.yaml")
+	if err == nil {
+		test.Errorf("Expected error for no telemetry pacckets, got nil")
+
+	}
+}
+
 func TestParseConfig(test *testing.T) {
 	config, err := ParseConfig(TEST_DATA_DIR + "good.yaml")
 	if err != nil {
@@ -71,6 +89,20 @@ func TestParseConfig(test *testing.T) {
 
 	compareTelemetryPackets(TelemetryPacket{Name: "Default", Port: 0, Measurements: []string{"Default", "Unsigned", "SixteenBit"}}, config.TelemetryPackets[0], test)
 	compareTelemetryPackets(TelemetryPacket{Name: "Endian", Port: 1, Measurements: []string{"BigEndian", "LittleEndian"}}, config.TelemetryPackets[1], test)
+}
+
+func TestParseConfigMissingMeasurement(test *testing.T) {
+	_, err := ParseConfig(TEST_DATA_DIR + "missing_meas_name.yaml")
+	if err == nil {
+		test.Errorf("Expected error, got nil")
+	}
+}
+
+func TestParseConfigBadEndianness(test *testing.T) {
+	_, err := ParseConfig(TEST_DATA_DIR + "bad_endianness.yaml")
+	if err == nil {
+		test.Errorf("Expected error, got nil")
+	}
 }
 
 func TestFindMeasurementByName(test *testing.T) {

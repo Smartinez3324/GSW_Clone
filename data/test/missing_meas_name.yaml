@@ -1,0 +1,10 @@
+name: missing_meas_name_test
+
+measurements:
+  - size: 4
+    type: int
+
+
+telemetry_packets:
+  - name: Default
+    port: 0

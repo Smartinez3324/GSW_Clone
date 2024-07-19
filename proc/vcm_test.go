@@ -57,23 +57,29 @@ func TestParseConfig(test *testing.T) {
 		test.Errorf("Expected 2 telemetry packets, got %d", len(config.TelemetryPackets))
 	}
 
-	// Check each measurement
 	compareMeasurements(Measurement{Name: "Default", Size: 4, Type: "int", Unsigned: false, Endianness: "big"}, config.Measurements[0], test)
 	compareMeasurements(Measurement{Name: "BigEndian", Size: 4, Type: "int", Unsigned: false, Endianness: "big"}, config.Measurements[1], test)
 	compareMeasurements(Measurement{Name: "LittleEndian", Size: 4, Type: "int", Unsigned: false, Endianness: "little"}, config.Measurements[2], test)
 	compareMeasurements(Measurement{Name: "Unsigned", Size: 4, Type: "int", Unsigned: true, Endianness: "big"}, config.Measurements[3], test)
 	compareMeasurements(Measurement{Name: "SixteenBit", Size: 2, Type: "int", Unsigned: false, Endianness: "big"}, config.Measurements[4], test)
 
-	// Check each telemetry packet
 	compareTelemetryPackets(TelemetryPacket{Name: "Default", Port: 0, Measurements: []string{"Default", "Unsigned", "SixteenBit"}}, config.TelemetryPackets[0], test)
 	compareTelemetryPackets(TelemetryPacket{Name: "Endian", Port: 1, Measurements: []string{"BigEndian", "LittleEndian"}}, config.TelemetryPackets[1], test)
 }
 
 func TestFindMeasurementByName(test *testing.T) {
+	config, _ := ParseConfig(TEST_DATA_DIR + "good.yaml")
+	measurement, err := FindMeasurementByName(config.Measurements, "Default")
+	if err != nil {
+		test.Errorf("Expected nil, got %v", err)
+	}
 
-}
+	compareMeasurements(Measurement{Name: "Default", Size: 4, Type: "int", Unsigned: false, Endianness: "big"}, *measurement, test)
 
-func TestFindMeasurementByNameMissing(test *testing.T) {
+	measurement, err = FindMeasurementByName(config.Measurements, "Missing")
+	if err == nil {
+		test.Errorf("Expected error, got nil")
+	}
 }
 
 func TestMeasurementToStringNoType(test *testing.T) {

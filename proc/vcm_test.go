@@ -8,7 +8,7 @@ const TEST_DATA_DIR = "../data/test/"
 
 func compareMeasurements(expected Measurement, actual Measurement, test *testing.T) {
 	if expected != actual {
-		test.Errorf("Expected:\n\tName: %s\n\tSize: %d\n\tType: %s\n\tUnsigned: %t\n\tEndianness: %s\nGot:\n\tName: %s\n\tSize: %d\n\tType: %s\n\tUnsigned: %t\n\tEndianness: %s", expected.Name, expected.Size, expected.Type, expected.Unsigned, expected.Endianness, actual.Name, actual.Size, actual.Type, actual.Unsigned, actual.Endianness)
+		test.Errorf("Expected:, \tName: %s, \tSize: %d, \tType: %s, \tUnsigned: %t, \tEndianness: %s, Got:, \tName: %s, \tSize: %d, \tType: %s, \tUnsigned: %t, \tEndianness: %s", expected.Name, expected.Size, expected.Type, expected.Unsigned, expected.Endianness, actual.Name, actual.Size, actual.Type, actual.Unsigned, actual.Endianness)
 	}
 }
 
@@ -29,6 +29,12 @@ func compareTelemetryPackets(expected TelemetryPacket, actual TelemetryPacket, t
 		if expected.Measurements[i] != actual.Measurements[i] {
 			test.Errorf("Expected %s, got %s for measurement name %d", expected.Measurements[i], actual.Measurements[i], i)
 		}
+	}
+}
+
+func CompareMeasurementString(expected string, actual string, test *testing.T) {
+	if expected != actual {
+		test.Errorf("\nExp: %s\nGot: %s", expected, actual)
 	}
 }
 
@@ -82,13 +88,16 @@ func TestFindMeasurementByName(test *testing.T) {
 	}
 }
 
-func TestMeasurementToStringNoType(test *testing.T) {
+func TestMeasurementToString(test *testing.T) {
+	bigSigned := Measurement{Name: "Test", Size: 4, Type: "int", Unsigned: false, Endianness: "big"}
+	expected := "Name: Test, Size: 4, Type: int, Signed, Endianness: big"
+	CompareMeasurementString(expected, bigSigned.String(), test)
 
-}
+	littleUnsigned := Measurement{Name: "Test", Size: 4, Type: "int", Unsigned: true, Endianness: "little"}
+	expected = "Name: Test, Size: 4, Type: int, Unsigned, Endianness: little"
+	CompareMeasurementString(expected, littleUnsigned.String(), test)
 
-func TestMeasurementToStringHasType(test *testing.T) {
-}
-
-func TestMeasurementToStringSigned(test *testing.T) {
-
+	noType := Measurement{Name: "Test", Size: 4, Unsigned: true, Endianness: "little"}
+	expected = "Name: Test, Size: 4, Unsigned, Endianness: little"
+	CompareMeasurementString(expected, noType.String(), test)
 }

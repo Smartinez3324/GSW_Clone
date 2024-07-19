@@ -36,13 +36,23 @@ func ParseConfig(filename string) (*Configuration, error) {
 		return nil, fmt.Errorf("error reading YAML file: %v", err)
 	}
 
-	err = yaml.Unmarshal(data, &GswConfig)
-	if err != nil {
-		return nil, fmt.Errorf("error parsing YAML: %v", err)
+	// Unmarshalling doesn't seem to lead to errors with bad data. Better to check result config
+	_ = yaml.Unmarshal(data, &GswConfig)
+	if GswConfig.Name == "" {
+		return nil, fmt.Errorf("Error parsing YAML. No config name.")
+	}
+
+	if len(GswConfig.Measurements) == 0 {
+		return nil, fmt.Errorf("Error parsing YAML. No measurements.")
+	}
+
+	if len(GswConfig.TelemetryPackets) == 0 {
+		return nil, fmt.Errorf("Error parsing YAML. No telemetry packets.")
 	}
 
 	// Set default values for measurements if not specified
 	for i := range GswConfig.Measurements {
+		// TODO: More strict checks of configuration and input handling
 		if GswConfig.Measurements[i].Name == "" {
 			return nil, fmt.Errorf("Measurement name missing")
 		}

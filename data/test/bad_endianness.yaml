@@ -1,0 +1,11 @@
+name: missing_meas_name_test
+
+measurements:
+  - name: Bad
+    size: 4
+    type: int
+    endianness: Super Bad
+
+telemetry_packets:
+  - name: Default
+    port: 0

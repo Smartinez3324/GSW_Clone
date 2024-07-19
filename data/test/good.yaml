@@ -1,2 +1,34 @@
 name: vcm_test
 
+measurements:
+  - name: Default
+    size: 4
+    type: int
+  - name: BigEndian
+    size: 4
+    type: int
+    endianness: big
+  - name: LittleEndian
+    size: 4
+    type: int
+    endianness: little
+  - name: Unsigned
+    size: 4
+    type: int
+    unsigned: true
+  - name: SixteenBit
+    size: 2
+    type: int
+
+telemetry_packets:
+  - name: Default
+    port: 0
+    measurements:
+      - Default
+      - Unsigned
+      - SixteenBit
+  - name: Endian
+    port: 1
+    measurements:
+      - BigEndian
+      - LittleEndian

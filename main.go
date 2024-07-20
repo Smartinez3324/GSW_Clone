@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/AarC10/GSW-V2/lib/tlm"
 	"github.com/AarC10/GSW-V2/proc"
 )
 
@@ -48,13 +49,42 @@ func decomInitialize() map[int]chan []byte {
 	return channelMap
 }
 
-func main() {
-	vcmInitialize()
-	channelMap := decomInitialize()
+//func main() {
+//	vcmInitialize()
+//	channelMap := decomInitialize()
+//
+//	for _, channel := range channelMap {
+//		go proc.TestReceiver(channel)
+//	}
+//
+//	select {}
+//}
 
-	for _, channel := range channelMap {
-		go proc.TestReceiver(channel)
+func main() {
+	proc.GswConfig = proc.Configuration{
+		Name: "example",
+		Measurements: []proc.Measurement{
+			{Name: "measurement1", Size: 4},
+			{Name: "measurement2", Size: 4},
+		},
+		TelemetryPackets: []proc.TelemetryPacket{
+			{Name: "packet1", Port: 10000, Measurements: []string{"measurement1", "measurement2"}},
+		},
 	}
 
-	select {}
+	tlm.TlmShmInit()
+
+	// Write to shared memory
+	err := tlm.TlmShmWrite(10000, []byte{1, 2, 3, 4, 5, 6, 7, 8})
+	if err != nil {
+		fmt.Println("Write error:", err)
+	}
+
+	// Read from shared memory
+	data, err := tlm.TlmShmRead(10000)
+	if err != nil {
+		fmt.Println("Read error:", err)
+	} else {
+		fmt.Println("Read data:", data)
+	}
 }

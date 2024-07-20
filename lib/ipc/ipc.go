@@ -2,13 +2,13 @@ package ipc
 
 import "github.com/AarC10/GSW-V2/proc"
 
-type IpcServiceSide interface {
+type IpcWriter interface {
 	Setup(packet proc.TelemetryPacket) error
 	Cleanup()
 	Write(data []byte) error
 }
 
-type IpcClientSide interface {
+type IpcReader interface {
 	Setup(packet proc.TelemetryPacket) error
 	Cleanup()
 	Read() ([]byte, error)

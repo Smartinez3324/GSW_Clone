@@ -2,9 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/AarC10/GSW-V2/lib/tlm"
 	"github.com/AarC10/GSW-V2/proc"
-	"time"
 )
 
 func printTelemetryPackets() {
@@ -73,24 +71,24 @@ func main() {
 		},
 	}
 
-	tlmPacketService, err := tlm.TlmServiceInit(proc.GswConfig.TelemetryPackets[0])
-	if err != nil {
-		fmt.Println("Error:", err)
-	}
-
-	fmt.Println("Starting telemetry packet service")
-	for {
-		err := tlmPacketService.Write([]byte{1, 2, 3, 4, 5, 6, 7, 8})
-		if err != nil {
-			fmt.Println("Write error:", err)
-		}
-		time.Sleep(1 * time.Second)
-
-		err = tlmPacketService.Write([]byte{8, 7, 6, 5, 4, 3, 2, 1})
-		if err != nil {
-			fmt.Println("Write error:", err)
-		}
-		time.Sleep(1 * time.Second)
-	}
+	//tlmPacketService, err := tlm.TlmServiceInit(proc.GswConfig.TelemetryPackets[0])
+	//if err != nil {
+	//	fmt.Println("Error:", err)
+	//}
+	//
+	//fmt.Println("Starting telemetry packet service")
+	//for {
+	//	err := tlmPacketService.Write([]byte{1, 2, 3, 4, 5, 6, 7, 8})
+	//	if err != nil {
+	//		fmt.Println("Write error:", err)
+	//	}
+	//	time.Sleep(1 * time.Second)
+	//
+	//	err = tlmPacketService.Write([]byte{8, 7, 6, 5, 4, 3, 2, 1})
+	//	if err != nil {
+	//		fmt.Println("Write error:", err)
+	//	}
+	//	time.Sleep(1 * time.Second)
+	//}
 
 }

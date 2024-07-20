@@ -86,6 +86,13 @@ func (handler *IpcShmHandler) Cleanup() {
 		if err := handler.file.Close(); err != nil {
 			fmt.Printf("Failed to close file: %v\n", err)
 		}
+
+		if err := os.Remove(handler.file.Name()); err != nil {
+			fmt.Printf("Failed to remove file: %v\n", err)
+		} else {
+			fmt.Printf("Removed file: %s\n", handler.file.Name())
+		}
+
 		handler.file = nil
 	}
 }

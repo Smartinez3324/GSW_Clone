@@ -37,13 +37,18 @@ func main() {
 	}
 	defer ipcReader.Cleanup()
 
+	lastUpdate := ipcReader.LastUpdate()
 	for {
-		data, err := ipcReader.Read()
-		if err != nil {
-			panic(err)
-		}
+		latestUpdate := ipcReader.LastUpdate()
+		if lastUpdate != latestUpdate {
+			data, err := ipcReader.Read()
+			if err != nil {
+				panic(err)
+			}
 
-		// Do something with data
-		fmt.Println(BytesToInt32(data))
+			// Do something with data
+			fmt.Println(BytesToInt32(data))
+			lastUpdate = latestUpdate
+		}
 	}
 }

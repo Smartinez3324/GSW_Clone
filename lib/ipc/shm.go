@@ -1,48 +1,50 @@
 package ipc
 
 import (
+	"encoding/binary"
 	"fmt"
 	"github.com/AarC10/GSW-V2/proc"
 	"os"
 	"path/filepath"
 	"syscall"
+	"time"
 )
 
 type IpcShmHandler struct {
-	file   *os.File
-	data   []byte
-	size   int
-	packet proc.TelemetryPacket
-	mode   int // 0 for reader, 1 for writer
+	file            *os.File
+	data            []byte
+	size            int
+	packet          proc.TelemetryPacket
+	mode            int // 0 for reader, 1 for writer
+	timestampOffset int // Offset for the timestamp in shared memory
 }
 
 const (
 	modeReader = iota
 	modeWriter
+	timestampSize = 8 // Size of timestamp in bytes (8 bytes for int64)
 )
 
-// CreateIpcShmHandler initializes a shared memory handler as a reader or writer.
-// Returns an instance of IpcShmHandler and an error if any occurs.
 func CreateIpcShmHandler(packet proc.TelemetryPacket, isWriter bool) (*IpcShmHandler, error) {
 	handler := &IpcShmHandler{
-		packet: packet,
-		size:   proc.GetPacketSize(packet),
-		mode:   modeReader,
+		packet:          packet,
+		size:            proc.GetPacketSize(packet) + timestampSize, // Add space for timestamp
+		mode:            modeReader,
+		timestampOffset: proc.GetPacketSize(packet), // Timestamp is stored at the end
 	}
 
-	// Use /dev/shm for shared memory
-	filename := filepath.Join("/dev/shm", fmt.Sprintf("gsw-service-%d.shm", packet.Port))
+	filename := filepath.Join("/dev/shm", fmt.Sprintf("gsw-service-%d", packet.Port))
 
 	if isWriter {
 		handler.mode = modeWriter
 		file, err := os.Create(filename)
 		if err != nil {
-			return nil, fmt.Errorf("failed to create file: %v", err)
+			return nil, fmt.Errorf("Failed to create file: %v", err)
 		}
 
 		if err := file.Truncate(int64(handler.size)); err != nil {
 			file.Close()
-			return nil, fmt.Errorf("failed to truncate file: %v", err)
+			return nil, fmt.Errorf("Failed to truncate file: %v", err)
 		}
 
 		handler.file = file
@@ -50,14 +52,14 @@ func CreateIpcShmHandler(packet proc.TelemetryPacket, isWriter bool) (*IpcShmHan
 		data, err := syscall.Mmap(int(file.Fd()), 0, handler.size, syscall.PROT_WRITE, syscall.MAP_SHARED)
 		if err != nil {
 			file.Close()
-			return nil, fmt.Errorf("failed to memory map file: %v", err)
+			return nil, fmt.Errorf("Failed to memory map file: %v", err)
 		}
 
 		handler.data = data
 	} else {
 		file, err := os.OpenFile(filename, os.O_RDWR, 0666)
 		if err != nil {
-			return nil, fmt.Errorf("failed to open file: %v", err)
+			return nil, fmt.Errorf("Failed to open file: %v", err)
 		}
 
 		handler.file = file
@@ -65,7 +67,7 @@ func CreateIpcShmHandler(packet proc.TelemetryPacket, isWriter bool) (*IpcShmHan
 		data, err := syscall.Mmap(int(file.Fd()), 0, handler.size, syscall.PROT_READ, syscall.MAP_SHARED)
 		if err != nil {
 			file.Close()
-			return nil, fmt.Errorf("failed to memory map file: %v", err)
+			return nil, fmt.Errorf("Failed to memory map file: %v", err)
 		}
 
 		handler.data = data
@@ -74,7 +76,6 @@ func CreateIpcShmHandler(packet proc.TelemetryPacket, isWriter bool) (*IpcShmHan
 	return handler, nil
 }
 
-// Cleanup releases resources used by the handler.
 func (handler *IpcShmHandler) Cleanup() {
 	if handler.data != nil {
 		if err := syscall.Munmap(handler.data); err != nil {
@@ -90,25 +91,29 @@ func (handler *IpcShmHandler) Cleanup() {
 	}
 }
 
-// Write writes data to the shared memory.
 func (handler *IpcShmHandler) Write(data []byte) error {
 	if handler.mode != modeWriter {
-		return fmt.Errorf("handler is in reader mode")
+		return fmt.Errorf("Handler is in reader mode")
 	}
-	if len(data) > handler.size {
-		return fmt.Errorf("data size exceeds shared memory size")
+	if len(data) > handler.size-timestampSize {
+		return fmt.Errorf("Data size exceeds shared memory size")
 	}
 
-	copy(handler.data, data)
+	copy(handler.data[:len(data)], data)
+	binary.BigEndian.PutUint64(handler.data[handler.timestampOffset:], uint64(time.Now().UnixNano()))
 	return nil
 }
 
-// Read reads data from the shared memory.
 func (handler *IpcShmHandler) Read() ([]byte, error) {
 	if handler.mode != modeReader {
-		return nil, fmt.Errorf("handler is in writer mode")
+		return nil, fmt.Errorf("Handler is in writer mode")
 	}
-	data := make([]byte, handler.size)
-	copy(data, handler.data)
+	data := make([]byte, handler.size-timestampSize)
+	copy(data, handler.data[:len(data)])
 	return data, nil
+}
+
+func (handler *IpcShmHandler) LastUpdate() time.Time {
+	timestamp := binary.BigEndian.Uint64(handler.data[handler.timestampOffset:])
+	return time.Unix(0, int64(timestamp))
 }

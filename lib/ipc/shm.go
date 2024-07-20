@@ -31,7 +31,7 @@ type ShmClientSide struct {
 	bufferReader shmipc.BufferReader
 }
 
-func (shmHandler *ShmServiceSide) Setup(telemetryPacket proc.TelemetryPacket) error {
+func setupCommonUds(common *ShmCommon, telemetryPacket proc.TelemetryPacket) error {
 	// Setup Unix domain socket
 	udsPath := filepath.Join(os.TempDir(), "gsw-service-", telemetryPacket.Name, "-", strconv.Itoa(telemetryPacket.Port), ".uds_sock")
 	_ = syscall.Unlink(udsPath)
@@ -39,12 +39,21 @@ func (shmHandler *ShmServiceSide) Setup(telemetryPacket proc.TelemetryPacket) er
 	if err != nil {
 		return fmt.Errorf("Creating Unix domain socket failed: %v", err)
 	}
-	shmHandler.common.unixListener = unixListener
+	common.unixListener = unixListener
 
 	// Accept UDS
-	shmHandler.common.conn, err = unixListener.Accept()
+	common.conn, err = unixListener.Accept()
 	if err != nil {
 		return fmt.Errorf("Accepting Unix domain socket failed: %v", err)
+	}
+
+	return nil
+}
+
+func (shmHandler *ShmServiceSide) Setup(telemetryPacket proc.TelemetryPacket) error {
+	err := setupCommonUds(&shmHandler.common, telemetryPacket)
+	if err != nil {
+		return err
 	}
 
 	// Create server session
@@ -65,6 +74,15 @@ func (shmHandler *ShmServiceSide) Setup(telemetryPacket proc.TelemetryPacket) er
 	shmHandler.writeBuff, err = shmHandler.bufferWriter.Reserve(proc.GetPacketSize(telemetryPacket))
 	if err != nil {
 		return fmt.Errorf("Reserve buffer failed: %v", err)
+	}
+
+	return nil
+}
+
+func (shmHandler *ShmClientSide) Setup(packet proc.TelemetryPacket) error {
+	err := setupCommonUds(&shmHandler.common, packet)
+	if err != nil {
+		return err
 	}
 
 	return nil

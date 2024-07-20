@@ -21,83 +21,92 @@ const (
 	modeWriter
 )
 
-func CreateIpcShmHandler(packet proc.TelemetryPacket, isWriter bool) *IpcShmHandler {
+// CreateIpcShmHandler initializes a shared memory handler as a reader or writer.
+// Returns an instance of IpcShmHandler and an error if any occurs.
+func CreateIpcShmHandler(packet proc.TelemetryPacket, isWriter bool) (*IpcShmHandler, error) {
 	handler := &IpcShmHandler{
 		packet: packet,
 		size:   proc.GetPacketSize(packet),
 		mode:   modeReader,
 	}
 
-	filename := filepath.Join(os.TempDir(), fmt.Sprintf("gsw-service-%d.shm", packet.Port))
+	// Use /dev/shm for shared memory
+	filename := filepath.Join("/dev/shm", fmt.Sprintf("gsw-service-%d.shm", packet.Port))
 
 	if isWriter {
 		handler.mode = modeWriter
 		file, err := os.Create(filename)
 		if err != nil {
-			panic(err)
+			return nil, fmt.Errorf("failed to create file: %v", err)
 		}
 
 		if err := file.Truncate(int64(handler.size)); err != nil {
-			panic(err)
+			file.Close()
+			return nil, fmt.Errorf("failed to truncate file: %v", err)
 		}
 
 		handler.file = file
 
 		data, err := syscall.Mmap(int(file.Fd()), 0, handler.size, syscall.PROT_WRITE, syscall.MAP_SHARED)
 		if err != nil {
-			panic(err)
+			file.Close()
+			return nil, fmt.Errorf("failed to memory map file: %v", err)
 		}
 
 		handler.data = data
 	} else {
 		file, err := os.OpenFile(filename, os.O_RDWR, 0666)
 		if err != nil {
-			panic(err)
+			return nil, fmt.Errorf("failed to open file: %v", err)
 		}
 
 		handler.file = file
 
 		data, err := syscall.Mmap(int(file.Fd()), 0, handler.size, syscall.PROT_READ, syscall.MAP_SHARED)
 		if err != nil {
-			panic(err)
+			file.Close()
+			return nil, fmt.Errorf("failed to memory map file: %v", err)
 		}
 
 		handler.data = data
 	}
 
-	return handler
+	return handler, nil
 }
 
+// Cleanup releases resources used by the handler.
 func (handler *IpcShmHandler) Cleanup() {
 	if handler.data != nil {
 		if err := syscall.Munmap(handler.data); err != nil {
-			panic(err)
+			fmt.Printf("Failed to unmap memory: %v\n", err)
 		}
 		handler.data = nil
 	}
 	if handler.file != nil {
 		if err := handler.file.Close(); err != nil {
-			panic(err)
+			fmt.Printf("Failed to close file: %v\n", err)
 		}
 		handler.file = nil
 	}
 }
 
+// Write writes data to the shared memory.
 func (handler *IpcShmHandler) Write(data []byte) error {
 	if handler.mode != modeWriter {
-		return fmt.Errorf("Handler is in reader mode")
+		return fmt.Errorf("handler is in reader mode")
 	}
 	if len(data) > handler.size {
-		return fmt.Errorf("Data size exceeds shared memory size")
+		return fmt.Errorf("data size exceeds shared memory size")
 	}
 
 	copy(handler.data, data)
 	return nil
 }
 
+// Read reads data from the shared memory.
 func (handler *IpcShmHandler) Read() ([]byte, error) {
 	if handler.mode != modeReader {
-		return nil, fmt.Errorf("Handler is in writer mode")
+		return nil, fmt.Errorf("handler is in writer mode")
 	}
 	data := make([]byte, handler.size)
 	copy(data, handler.data)

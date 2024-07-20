@@ -84,7 +84,12 @@ func main() {
 		},
 	}
 
-	ipcWriter := ipc.CreateIpcShmHandler(proc.GswConfig.TelemetryPackets[0], true)
+	ipcWriter, err := ipc.CreateIpcShmHandler(proc.GswConfig.TelemetryPackets[0], true)
+	if err != nil {
+		fmt.Printf("Error creating IPC handler: %v\n", err)
+		return
+	}
+
 	defer ipcWriter.Cleanup()
 
 	fmt.Println("Writing to shared memory...")

@@ -30,7 +30,11 @@ func main() {
 		},
 	}
 
-	ipcReader := ipc.CreateIpcShmHandler(proc.GswConfig.TelemetryPackets[0], false)
+	ipcReader, err := ipc.CreateIpcShmHandler(proc.GswConfig.TelemetryPackets[0], false)
+	if err != nil {
+		fmt.Println("Error creating IPC handler: %v\n", err)
+		return
+	}
 	defer ipcReader.Cleanup()
 
 	for {

@@ -2,10 +2,18 @@ package proc
 
 import (
 	"fmt"
+	"github.com/AarC10/GSW-V2/lib/ipc"
 	"net"
 )
 
-func PacketListener(packet TelemetryPacket, channel chan []byte) {
+func PacketListener(packet TelemetryPacket) {
+	shmWriter, _ := ipc.CreateIpcShmHandler(packet, true)
+	if shmWriter == nil {
+		fmt.Printf("Failed to create shared memory writer\n")
+		return
+	}
+	defer shmWriter.Cleanup()
+
 	packetSize := GetPacketSize(packet)
 	fmt.Printf("Packet size for port %d: %d\n", packet.Port, packetSize)
 
@@ -35,20 +43,12 @@ func PacketListener(packet TelemetryPacket, channel chan []byte) {
 		}
 
 		if n == packetSize {
-
-			channel <- buffer[:n] // Send data over channel
+			err := shmWriter.Write(buffer)
+			if err != nil {
+				fmt.Printf("Error writing to shared memory: %v\n", err)
+			}
 		} else {
 			fmt.Printf("Received packet of incorrect size. Expected: %d, Received: %d\n", packetSize, n)
 		}
-	}
-}
-
-// TODO: Placeholder consumer function. Remove once feature for publishing data is complete
-func TestReceiver(channel chan []byte) {
-	i := 0
-	for {
-		data := <-channel
-		fmt.Printf("Packet %d: %v\n", i, data)
-		i++
 	}
 }

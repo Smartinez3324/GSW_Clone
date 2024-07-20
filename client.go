@@ -30,6 +30,8 @@ func main() {
 	}
 
 	outChan := make(chan []byte)
+	defer close(outChan)
+
 	go tlm.ReadTelemetryPacket(proc.GswConfig.TelemetryPackets[0], outChan)
 
 	for {

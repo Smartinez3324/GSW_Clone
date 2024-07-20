@@ -1,12 +1,8 @@
 package main
 
 import (
-	"bytes"
-	"encoding/binary"
 	"fmt"
-	"github.com/AarC10/GSW-V2/lib/ipc"
 	"github.com/AarC10/GSW-V2/proc"
-	"time"
 )
 
 func printTelemetryPackets() {
@@ -46,66 +42,15 @@ func decomInitialize() map[int]chan []byte {
 		finalOutputChannel := make(chan []byte)
 		channelMap[packet.Port] = finalOutputChannel
 
-		go proc.PacketListener(packet, finalOutputChannel)
+		go proc.PacketListener(packet)
 	}
 
 	return channelMap
 }
 
-//func main() {
-//	vcmInitialize()
-//	channelMap := decomInitialize()
-//
-//	for _, channel := range channelMap {
-//		go proc.TestReceiver(channel)
-//	}
-//
-//	select {}
-//}
-
-func Int32ToBytes(value int32) []byte {
-	buf := new(bytes.Buffer)
-	err := binary.Write(buf, binary.LittleEndian, value) // Use binary.BigEndian if you need big-endian
-	if err != nil {
-		panic(err) // Handle error appropriately
-	}
-	return buf.Bytes()
-}
-
 func main() {
-	proc.GswConfig = proc.Configuration{
-		Name: "example",
-		Measurements: []proc.Measurement{
-			{Name: "measurement1", Size: 4},
-			{Name: "measurement2", Size: 4},
-		},
-		TelemetryPackets: []proc.TelemetryPacket{
-			{Name: "packet1", Port: 10000, Measurements: []string{"measurement1", "measurement2"}},
-		},
-	}
+	vcmInitialize()
+	decomInitialize()
 
-	ipcWriter, err := ipc.CreateIpcShmHandler(proc.GswConfig.TelemetryPackets[0], true)
-	if err != nil {
-		fmt.Printf("Error creating IPC handler: %v\n", err)
-		return
-	}
-
-	defer ipcWriter.Cleanup()
-
-	fmt.Println("Writing to shared memory...")
-	// Increment a i32 value in the shared memory
-	var i int32
-	i = 0
-
-	for {
-		err := ipcWriter.Write(Int32ToBytes(i))
-		if err != nil {
-			fmt.Printf("Error writing to shared memory: %v\n", err)
-		}
-		fmt.Println(i)
-
-		i++
-		time.Sleep(1 * time.Second)
-	}
-
+	select {}
 }

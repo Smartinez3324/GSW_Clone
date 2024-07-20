@@ -1,42 +1,27 @@
 package main
 
 import (
-	"bytes"
-	"encoding/binary"
-	"github.com/AarC10/GSW-V2/lib/tlm"
+	"fmt"
 	"github.com/AarC10/GSW-V2/proc"
+	"time"
 )
 
-func BytesToInt32(data []byte) int32 {
-	var i int32
-	buf := bytes.NewReader(data)
-	err := binary.Read(buf, binary.LittleEndian, &i)
-	if err != nil {
-		panic(err)
-	}
-	return i
-}
-
 func main() {
-	proc.GswConfig = proc.Configuration{
-		Name: "example",
-		Measurements: []proc.Measurement{
-			{Name: "measurement1", Size: 4},
-			{Name: "measurement2", Size: 4},
-		},
-		TelemetryPackets: []proc.TelemetryPacket{
-			{Name: "packet1", Port: 10000, Measurements: []string{"measurement1", "measurement2"}},
-		},
+	_, err := proc.ParseConfig("data/config/backplane.yaml")
+	if err != nil {
+		fmt.Printf("Error parsing YAML: %v\n", err)
+		return
 	}
 
 	outChan := make(chan []byte)
-	defer close(outChan)
-
-	go tlm.ReadTelemetryPacket(proc.GswConfig.TelemetryPackets[0], outChan)
+	for _, packet := range proc.GswConfig.TelemetryPackets {
+		go proc.ReadTelemetryPacket(packet, outChan)
+	}
 
 	for {
 		data := <-outChan
-		i := BytesToInt32(data)
-		println(i)
+		fmt.Print("\033[H\033[2J")
+		fmt.Println(data)
+		time.Sleep(1 * time.Nanosecond)
 	}
 }

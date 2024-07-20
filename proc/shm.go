@@ -1,9 +1,8 @@
-package ipc
+package proc
 
 import (
 	"encoding/binary"
 	"fmt"
-	"github.com/AarC10/GSW-V2/proc"
 	"os"
 	"path/filepath"
 	"syscall"
@@ -14,7 +13,7 @@ type IpcShmHandler struct {
 	file            *os.File
 	data            []byte
 	size            int
-	packet          proc.TelemetryPacket
+	packet          TelemetryPacket
 	mode            int // 0 for reader, 1 for writer
 	timestampOffset int // Offset for the timestamp in shared memory
 }
@@ -25,12 +24,12 @@ const (
 	timestampSize = 8 // Size of timestamp in bytes (8 bytes for int64)
 )
 
-func CreateIpcShmHandler(packet proc.TelemetryPacket, isWriter bool) (*IpcShmHandler, error) {
+func CreateIpcShmHandler(packet TelemetryPacket, isWriter bool) (*IpcShmHandler, error) {
 	handler := &IpcShmHandler{
 		packet:          packet,
-		size:            proc.GetPacketSize(packet) + timestampSize, // Add space for timestamp
+		size:            GetPacketSize(packet) + timestampSize, // Add space for timestamp
 		mode:            modeReader,
-		timestampOffset: proc.GetPacketSize(packet), // Timestamp is stored at the end
+		timestampOffset: GetPacketSize(packet), // Timestamp is stored at the end
 	}
 
 	filename := filepath.Join("/dev/shm", fmt.Sprintf("gsw-service-%d", packet.Port))

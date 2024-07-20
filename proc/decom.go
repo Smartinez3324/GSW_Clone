@@ -2,12 +2,11 @@ package proc
 
 import (
 	"fmt"
-	"github.com/AarC10/GSW-V2/lib/ipc"
 	"net"
 )
 
 func PacketListener(packet TelemetryPacket) {
-	shmWriter, _ := ipc.CreateIpcShmHandler(packet, true)
+	shmWriter, _ := CreateIpcShmHandler(packet, true)
 	if shmWriter == nil {
 		fmt.Printf("Failed to create shared memory writer\n")
 		return
@@ -17,7 +16,6 @@ func PacketListener(packet TelemetryPacket) {
 	packetSize := GetPacketSize(packet)
 	fmt.Printf("Packet size for port %d: %d\n", packet.Port, packetSize)
 
-	// Listen over UDP
 	addr, err := net.ResolveUDPAddr("udp", fmt.Sprintf(":%d", packet.Port))
 	if err != nil {
 		fmt.Printf("Error resolving UDP address: %v\n", err)
@@ -49,6 +47,29 @@ func PacketListener(packet TelemetryPacket) {
 			}
 		} else {
 			fmt.Printf("Received packet of incorrect size. Expected: %d, Received: %d\n", packetSize, n)
+		}
+	}
+}
+
+func ReadTelemetryPacket(packet TelemetryPacket, outChannel chan []byte) {
+	procReader, err := CreateIpcShmHandler(packet, false)
+	if err != nil {
+		fmt.Println("Error creating proc handler: %v\n", err)
+		return
+	}
+	defer procReader.Cleanup()
+
+	lastUpdate := procReader.LastUpdate()
+	for {
+		latestUpdate := procReader.LastUpdate()
+		if lastUpdate != latestUpdate {
+			data, err := procReader.Read()
+			if err != nil {
+				fmt.Println("Error reading from shared memory: %v\n", err)
+				continue
+			}
+			lastUpdate = latestUpdate
+			outChannel <- data
 		}
 	}
 }

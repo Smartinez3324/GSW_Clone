@@ -2,12 +2,36 @@ package tlm
 
 import (
 	"fmt"
+	"github.com/AarC10/GSW-V2/lib/ipc"
 	"github.com/AarC10/GSW-V2/proc"
 )
 
 func byteSwap(data []byte, startIndex int, stopIndex int) {
 	for i, j := startIndex, stopIndex; i < j; i, j = i+1, j-1 {
 		data[i], data[j] = data[j], data[i]
+	}
+}
+
+func ReadTelemetryPacket(packet proc.TelemetryPacket, outChannel chan []byte) {
+	ipcReader, err := ipc.CreateIpcShmHandler(packet, false)
+	if err != nil {
+		fmt.Println("Error creating IPC handler: %v\n", err)
+		return
+	}
+	defer ipcReader.Cleanup()
+
+	lastUpdate := ipcReader.LastUpdate()
+	for {
+		latestUpdate := ipcReader.LastUpdate()
+		if lastUpdate != latestUpdate {
+			data, err := ipcReader.Read()
+			if err != nil {
+				fmt.Println("Error reading from shared memory: %v\n", err)
+				continue
+			}
+			lastUpdate = latestUpdate
+			outChannel <- data
+		}
 	}
 }
 

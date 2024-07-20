@@ -3,8 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/binary"
-	"fmt"
-	"github.com/AarC10/GSW-V2/lib/ipc"
+	"github.com/AarC10/GSW-V2/lib/tlm"
 	"github.com/AarC10/GSW-V2/proc"
 )
 
@@ -30,25 +29,12 @@ func main() {
 		},
 	}
 
-	ipcReader, err := ipc.CreateIpcShmHandler(proc.GswConfig.TelemetryPackets[0], false)
-	if err != nil {
-		fmt.Println("Error creating IPC handler: %v\n", err)
-		return
-	}
-	defer ipcReader.Cleanup()
+	outChan := make(chan []byte)
+	go tlm.ReadTelemetryPacket(proc.GswConfig.TelemetryPackets[0], outChan)
 
-	lastUpdate := ipcReader.LastUpdate()
 	for {
-		latestUpdate := ipcReader.LastUpdate()
-		if lastUpdate != latestUpdate {
-			data, err := ipcReader.Read()
-			if err != nil {
-				panic(err)
-			}
-
-			// Do something with data
-			fmt.Println(BytesToInt32(data))
-			lastUpdate = latestUpdate
-		}
+		data := <-outChan
+		i := BytesToInt32(data)
+		println(i)
 	}
 }

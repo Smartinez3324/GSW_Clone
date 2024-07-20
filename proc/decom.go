@@ -5,21 +5,8 @@ import (
 	"net"
 )
 
-func getPacketSize(packet TelemetryPacket) int {
-	size := 0
-	for _, measurementName := range packet.Measurements {
-		measurement, err := FindMeasurementByName(GswConfig.Measurements, measurementName)
-		if err != nil {
-			fmt.Printf("\t\tMeasurement '%s' not found: %v\n", measurementName, err)
-			continue
-		}
-		size += measurement.Size
-	}
-	return size
-}
-
 func PacketListener(packet TelemetryPacket, channel chan []byte) {
-	packetSize := getPacketSize(packet)
+	packetSize := GetPacketSize(packet)
 	fmt.Printf("Packet size for port %d: %d\n", packet.Port, packetSize)
 
 	// Listen over UDP

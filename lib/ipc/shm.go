@@ -18,13 +18,17 @@ type ShmCommon struct {
 }
 
 type ShmServiceSide struct {
-	common    ShmCommon
-	shmServer *shmipc.Session
+	common       ShmCommon
+	shmServer    *shmipc.Session
+	bufferWriter shmipc.BufferWriter
+	writeBuff    []byte
 }
 
 type ShmClientSide struct {
-	common    ShmCommon
-	shmClient *shmipc.Session
+	common       ShmCommon
+	shmClient    *shmipc.Session
+	packetSize   int
+	bufferReader shmipc.BufferReader
 }
 
 func (shmHandler *ShmServiceSide) Setup(telemetryPacket proc.TelemetryPacket) error {
@@ -35,46 +39,78 @@ func (shmHandler *ShmServiceSide) Setup(telemetryPacket proc.TelemetryPacket) er
 	if err != nil {
 		return fmt.Errorf("Creating Unix domain socket failed: %v", err)
 	}
+	shmHandler.common.unixListener = unixListener
 
 	// Accept UDS
-	conn, err := unixListener.Accept()
+	shmHandler.common.conn, err = unixListener.Accept()
 	if err != nil {
 		return fmt.Errorf("Accepting Unix domain socket failed: %v", err)
 	}
-	shmHandler.common.unixListener = unixListener
 
 	// Create server session
 	conf := shmipc.DefaultConfig()
-	shmServer, err := shmipc.Server(conn, conf)
+	shmHandler.shmServer, err = shmipc.Server(shmHandler.common.conn, conf)
 	if err != nil {
 		return fmt.Errorf("IPC server creation failed: %v", err)
 	}
-	shmHandler.common.conn = conn
-	shmHandler.shmServer = shmServer
 
 	// Accept stream
-	stream, err := shmServer.AcceptStream()
+	shmHandler.common.stream, err = shmHandler.shmServer.AcceptStream()
 	if err != nil {
 		return fmt.Errorf("Accept stream failed: %v", err)
 	}
-	shmHandler.common.stream = stream
+
+	// Create buffer writer
+	shmHandler.bufferWriter = shmHandler.common.stream.BufferWriter()
+	shmHandler.writeBuff, err = shmHandler.bufferWriter.Reserve(proc.GetPacketSize(telemetryPacket))
+	if err != nil {
+		return fmt.Errorf("Reserve buffer failed: %v", err)
+	}
 
 	return nil
 }
 
-func (shmHandler *ShmServiceSide) Cleanup() error {
-	shmHandler.common.unixListener.Close()
-	shmHandler.common.conn.Close()
-	shmHandler.shmServer.Close()
-	shmHandler.common.stream.Close()
-	return nil
+func (shmHandler *ShmServiceSide) Cleanup() {
+	defer func(unixListener *net.UnixListener) {
+		err := unixListener.Close()
+		if err != nil {
+			fmt.Printf("Closing Unix domain socket failed: %v\n", err)
+		}
+	}(shmHandler.common.unixListener)
+
+	defer func(conn net.Conn) {
+		err := conn.Close()
+		if err != nil {
+			fmt.Printf("Closing connection failed: %v", err)
+		}
+	}(shmHandler.common.conn)
+
+	defer func(shmServer *shmipc.Session) {
+		err := shmServer.Close()
+		if err != nil {
+			fmt.Printf("Closing IPC server failed: %v\n", err)
+		}
+	}(shmHandler.shmServer)
+
+	defer func(stream *shmipc.Stream) {
+		err := stream.Close()
+		if err != nil {
+			fmt.Printf("Closing stream failed: %v\n", err)
+		}
+	}(shmHandler.common.stream)
 }
 
 func (shmHandler *ShmServiceSide) Write(data []byte) error {
-
-	return nil
+	copy(shmHandler.writeBuff, data)
+	return shmHandler.common.stream.Flush(false)
 }
 
 func (shmHandler *ShmClientSide) Read() ([]byte, error) {
-	return nil, nil
+	data := make([]byte, shmHandler.packetSize)
+	n, err := shmHandler.common.stream.Read(data)
+	if err != nil {
+		return nil, fmt.Errorf("Read failed: %v", err)
+	}
+
+	return data[:n], nil
 }

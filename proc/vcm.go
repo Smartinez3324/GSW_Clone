@@ -76,6 +76,19 @@ func FindMeasurementByName(measurements []Measurement, name string) (*Measuremen
 	return nil, fmt.Errorf("measurement '%s' not found", name)
 }
 
+func GetPacketSize(packet TelemetryPacket) int {
+	size := 0
+	for _, measurementName := range packet.Measurements {
+		measurement, err := FindMeasurementByName(GswConfig.Measurements, measurementName)
+		if err != nil {
+			fmt.Printf("\t\tMeasurement '%s' not found: %v\n", measurementName, err)
+			continue
+		}
+		size += measurement.Size
+	}
+	return size
+}
+
 func (m Measurement) String() string {
 	var sb strings.Builder
 	sb.WriteString(fmt.Sprintf("Name: %s, Size: %d", m.Name, m.Size))

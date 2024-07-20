@@ -8,118 +8,98 @@ import (
 	"syscall"
 )
 
-type IpcShmCommon struct {
+type IpcShmHandler struct {
 	file   *os.File
 	data   []byte
 	size   int
 	packet proc.TelemetryPacket
+	mode   int // 0 for reader, 1 for writer
 }
 
-type IpcShmWriter struct {
-	common IpcShmCommon
-}
+const (
+	modeReader = iota
+	modeWriter
+)
 
-type IpcShmReader struct {
-	common IpcShmCommon
-}
-
-func CreateIpcShmWriter(packet proc.TelemetryPacket) *IpcShmWriter {
-	shmHandler := &IpcShmWriter{
-		common: IpcShmCommon{
-			packet: packet,
-			size:   proc.GetPacketSize(packet),
-		},
+func CreateIpcShmHandler(packet proc.TelemetryPacket, isWriter bool) *IpcShmHandler {
+	handler := &IpcShmHandler{
+		packet: packet,
+		size:   proc.GetPacketSize(packet),
+		mode:   modeReader,
 	}
 
 	filename := filepath.Join(os.TempDir(), fmt.Sprintf("gsw-service-%d.shm", packet.Port))
-	file, err := os.Create(filename)
-	if err != nil {
-		panic(err)
-	}
 
-	if err := file.Truncate(int64(shmHandler.common.size)); err != nil {
-		panic(err)
-	}
-
-	shmHandler.common.file = file
-
-	data, err := syscall.Mmap(int(file.Fd()), 0, shmHandler.common.size, syscall.PROT_WRITE, syscall.MAP_SHARED)
-	if err != nil {
-		panic(err)
-	}
-
-	shmHandler.common.data = data
-
-	return shmHandler
-}
-
-func CreateIpcShmReader(packet proc.TelemetryPacket) *IpcShmReader {
-	shmHandler := &IpcShmReader{
-		common: IpcShmCommon{
-			packet: packet,
-			size:   proc.GetPacketSize(packet),
-		},
-	}
-
-	filename := filepath.Join(os.TempDir(), fmt.Sprintf("gsw-service-%d.shm", packet.Port))
-	file, err := os.OpenFile(filename, os.O_RDWR, 0666)
-	if err != nil {
-		panic(err)
-	}
-
-	shmHandler.common.file = file
-
-	data, err := syscall.Mmap(int(file.Fd()), 0, shmHandler.common.size, syscall.PROT_READ, syscall.MAP_SHARED)
-	if err != nil {
-		panic(err)
-	}
-
-	shmHandler.common.data = data
-
-	return shmHandler
-}
-
-func (shmHandler *IpcShmWriter) Cleanup() {
-	if shmHandler.common.data != nil {
-		if err := syscall.Munmap(shmHandler.common.data); err != nil {
+	if isWriter {
+		handler.mode = modeWriter
+		file, err := os.Create(filename)
+		if err != nil {
 			panic(err)
 		}
-		shmHandler.common.data = nil
-	}
-	if shmHandler.common.file != nil {
-		if err := shmHandler.common.file.Close(); err != nil {
+
+		if err := file.Truncate(int64(handler.size)); err != nil {
 			panic(err)
 		}
-		shmHandler.common.file = nil
+
+		handler.file = file
+
+		data, err := syscall.Mmap(int(file.Fd()), 0, handler.size, syscall.PROT_WRITE, syscall.MAP_SHARED)
+		if err != nil {
+			panic(err)
+		}
+
+		handler.data = data
+	} else {
+		file, err := os.OpenFile(filename, os.O_RDWR, 0666)
+		if err != nil {
+			panic(err)
+		}
+
+		handler.file = file
+
+		data, err := syscall.Mmap(int(file.Fd()), 0, handler.size, syscall.PROT_READ, syscall.MAP_SHARED)
+		if err != nil {
+			panic(err)
+		}
+
+		handler.data = data
+	}
+
+	return handler
+}
+
+func (handler *IpcShmHandler) Cleanup() {
+	if handler.data != nil {
+		if err := syscall.Munmap(handler.data); err != nil {
+			panic(err)
+		}
+		handler.data = nil
+	}
+	if handler.file != nil {
+		if err := handler.file.Close(); err != nil {
+			panic(err)
+		}
+		handler.file = nil
 	}
 }
 
-func (shmHandler *IpcShmReader) Cleanup() {
-	if shmHandler.common.data != nil {
-		if err := syscall.Munmap(shmHandler.common.data); err != nil {
-			panic(err)
-		}
-		shmHandler.common.data = nil
+func (handler *IpcShmHandler) Write(data []byte) error {
+	if handler.mode != modeWriter {
+		return fmt.Errorf("Handler is in reader mode")
 	}
-	if shmHandler.common.file != nil {
-		if err := shmHandler.common.file.Close(); err != nil {
-			panic(err)
-		}
-		shmHandler.common.file = nil
-	}
-}
-
-func (shmHandler *IpcShmWriter) Write(data []byte) error {
-	if len(data) > shmHandler.common.size {
-		return fmt.Errorf("data size exceeds shared memory size")
+	if len(data) > handler.size {
+		return fmt.Errorf("Data size exceeds shared memory size")
 	}
 
-	copy(shmHandler.common.data, data)
+	copy(handler.data, data)
 	return nil
 }
 
-func (shmHandler *IpcShmReader) Read() ([]byte, error) {
-	data := make([]byte, shmHandler.common.size)
-	copy(data, shmHandler.common.data)
+func (handler *IpcShmHandler) Read() ([]byte, error) {
+	if handler.mode != modeReader {
+		return nil, fmt.Errorf("Handler is in writer mode")
+	}
+	data := make([]byte, handler.size)
+	copy(data, handler.data)
 	return data, nil
 }

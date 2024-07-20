@@ -30,7 +30,7 @@ func main() {
 		},
 	}
 
-	ipcReader := ipc.CreateIpcShmReader(proc.GswConfig.TelemetryPackets[0])
+	ipcReader := ipc.CreateIpcShmHandler(proc.GswConfig.TelemetryPackets[0], false)
 	defer ipcReader.Cleanup()
 
 	for {

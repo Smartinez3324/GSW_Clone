@@ -84,7 +84,7 @@ func main() {
 		},
 	}
 
-	ipcWriter := ipc.CreateIpcShmWriter(proc.GswConfig.TelemetryPackets[0])
+	ipcWriter := ipc.CreateIpcShmHandler(proc.GswConfig.TelemetryPackets[0], true)
 	defer ipcWriter.Cleanup()
 
 	fmt.Println("Writing to shared memory...")

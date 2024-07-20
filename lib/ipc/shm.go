@@ -12,9 +12,11 @@ import (
 )
 
 type ShmCommon struct {
+	udsPath      string
 	unixListener *net.UnixListener
 	conn         net.Conn
 	stream       *shmipc.Stream
+	packetSize   int
 }
 
 type ShmServiceSide struct {
@@ -26,16 +28,16 @@ type ShmServiceSide struct {
 
 type ShmClientSide struct {
 	common       ShmCommon
-	shmClient    *shmipc.Session
-	packetSize   int
+	shmClient    *shmipc.SessionManager
 	bufferReader shmipc.BufferReader
+	stream       *shmipc.Stream
 }
 
 func setupCommonUds(common *ShmCommon, telemetryPacket proc.TelemetryPacket) error {
 	// Setup Unix domain socket
-	udsPath := filepath.Join(os.TempDir(), "gsw-service-", telemetryPacket.Name, "-", strconv.Itoa(telemetryPacket.Port), ".uds_sock")
-	_ = syscall.Unlink(udsPath)
-	unixListener, err := net.ListenUnix("unix", &net.UnixAddr{Name: udsPath, Net: "unix"})
+	common.udsPath = filepath.Join(os.TempDir(), "gsw-service-", telemetryPacket.Name, "-", strconv.Itoa(telemetryPacket.Port), ".uds_sock")
+	_ = syscall.Unlink(common.udsPath)
+	unixListener, err := net.ListenUnix("unix", &net.UnixAddr{Name: common.udsPath, Net: "unix"})
 	if err != nil {
 		return fmt.Errorf("Creating Unix domain socket failed: %v", err)
 	}
@@ -79,15 +81,6 @@ func (shmHandler *ShmServiceSide) Setup(telemetryPacket proc.TelemetryPacket) er
 	return nil
 }
 
-func (shmHandler *ShmClientSide) Setup(packet proc.TelemetryPacket) error {
-	err := setupCommonUds(&shmHandler.common, packet)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func (shmHandler *ShmServiceSide) Cleanup() {
 	defer func(unixListener *net.UnixListener) {
 		err := unixListener.Close()
@@ -118,13 +111,49 @@ func (shmHandler *ShmServiceSide) Cleanup() {
 	}(shmHandler.common.stream)
 }
 
+func (shmHandler *ShmClientSide) Setup(packet proc.TelemetryPacket) error {
+	err := setupCommonUds(&shmHandler.common, packet)
+	if err != nil {
+		return err
+	}
+
+	conf := shmipc.DefaultSessionManagerConfig()
+	conf.ShareMemoryPathPrefix = "/dev/shm/client.ipc.shm"
+	conf.Network = "unix"
+	conf.Address = shmHandler.common.udsPath
+
+	shmHandler.shmClient, err = shmipc.NewSessionManager(conf)
+	if err != nil {
+		panic("create client session failed, " + err.Error())
+	}
+
+	// Create stream
+	shmHandler.stream, err = shmHandler.shmClient.GetStream()
+	if err != nil {
+		panic("client open stream failed, " + err.Error())
+	}
+
+	return nil
+}
+
+func (shmHandler *ShmClientSide) Cleanup() {
+	defer func(shmClient *shmipc.SessionManager) {
+		err := shmClient.Close()
+		if err != nil {
+			fmt.Printf("Closing IPC client failed: %v\n", err)
+		}
+	}(shmHandler.shmClient)
+
+	defer shmHandler.shmClient.PutBack(shmHandler.stream)
+}
+
 func (shmHandler *ShmServiceSide) Write(data []byte) error {
 	copy(shmHandler.writeBuff, data)
 	return shmHandler.common.stream.Flush(false)
 }
 
 func (shmHandler *ShmClientSide) Read() ([]byte, error) {
-	data := make([]byte, shmHandler.packetSize)
+	data := make([]byte, shmHandler.common.packetSize)
 	n, err := shmHandler.common.stream.Read(data)
 	if err != nil {
 		return nil, fmt.Errorf("Read failed: %v", err)

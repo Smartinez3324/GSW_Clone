@@ -2,18 +2,20 @@ package proc
 
 import (
 	"fmt"
+	"github.com/AarC10/GSW-V2/lib/ipc"
 	"net"
+	"strconv"
 )
 
 func PacketListener(packet TelemetryPacket) {
-	shmWriter, _ := CreateIpcShmHandler(packet, true)
+	packetSize := GetPacketSize(packet)
+	shmWriter, _ := ipc.CreateIpcShmHandler(strconv.Itoa(packet.Port), packetSize, true)
 	if shmWriter == nil {
 		fmt.Printf("Failed to create shared memory writer\n")
 		return
 	}
 	defer shmWriter.Cleanup()
 
-	packetSize := GetPacketSize(packet)
 	fmt.Printf("Packet size for port %d: %d\n", packet.Port, packetSize)
 
 	addr, err := net.ResolveUDPAddr("udp", fmt.Sprintf(":%d", packet.Port))
@@ -52,7 +54,7 @@ func PacketListener(packet TelemetryPacket) {
 }
 
 func ReadTelemetryPacket(packet TelemetryPacket, outChannel chan []byte) {
-	procReader, err := CreateIpcShmHandler(packet, false)
+	procReader, err := ipc.CreateIpcShmHandler(strconv.Itoa(packet.Port), GetPacketSize(packet), false)
 	if err != nil {
 		fmt.Println("Error creating proc handler: %v\n", err)
 		return

@@ -1,4 +1,4 @@
-package proc
+package ipc
 
 type IpcWriter interface {
 	Write(data []byte) error

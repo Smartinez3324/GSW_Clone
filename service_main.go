@@ -1,8 +1,12 @@
 package main
 
 import (
+	"bytes"
+	"encoding/binary"
 	"fmt"
+	"github.com/AarC10/GSW-V2/lib/ipc"
 	"github.com/AarC10/GSW-V2/proc"
+	"time"
 )
 
 func printTelemetryPackets() {
@@ -59,6 +63,15 @@ func decomInitialize() map[int]chan []byte {
 //	select {}
 //}
 
+func Int32ToBytes(value int32) []byte {
+	buf := new(bytes.Buffer)
+	err := binary.Write(buf, binary.LittleEndian, value) // Use binary.BigEndian if you need big-endian
+	if err != nil {
+		panic(err) // Handle error appropriately
+	}
+	return buf.Bytes()
+}
+
 func main() {
 	proc.GswConfig = proc.Configuration{
 		Name: "example",
@@ -71,24 +84,23 @@ func main() {
 		},
 	}
 
-	//tlmPacketService, err := tlm.TlmServiceInit(proc.GswConfig.TelemetryPackets[0])
-	//if err != nil {
-	//	fmt.Println("Error:", err)
-	//}
-	//
-	//fmt.Println("Starting telemetry packet service")
-	//for {
-	//	err := tlmPacketService.Write([]byte{1, 2, 3, 4, 5, 6, 7, 8})
-	//	if err != nil {
-	//		fmt.Println("Write error:", err)
-	//	}
-	//	time.Sleep(1 * time.Second)
-	//
-	//	err = tlmPacketService.Write([]byte{8, 7, 6, 5, 4, 3, 2, 1})
-	//	if err != nil {
-	//		fmt.Println("Write error:", err)
-	//	}
-	//	time.Sleep(1 * time.Second)
-	//}
+	ipcWriter := ipc.CreateIpcShmWriter(proc.GswConfig.TelemetryPackets[0])
+	defer ipcWriter.Cleanup()
+
+	fmt.Println("Writing to shared memory...")
+	// Increment a i32 value in the shared memory
+	var i int32
+	i = 0
+
+	for {
+		err := ipcWriter.Write(Int32ToBytes(i))
+		if err != nil {
+			fmt.Printf("Error writing to shared memory: %v\n", err)
+		}
+		fmt.Println(i)
+
+		i++
+		time.Sleep(1 * time.Second)
+	}
 
 }

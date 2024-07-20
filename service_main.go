@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/AarC10/GSW-V2/lib/tlm"
 	"github.com/AarC10/GSW-V2/proc"
+	"time"
 )
 
 func printTelemetryPackets() {
@@ -72,19 +73,24 @@ func main() {
 		},
 	}
 
-	tlm.TlmShmInit()
-
-	// Write to shared memory
-	err := tlm.TlmShmWrite(10000, []byte{1, 2, 3, 4, 5, 6, 7, 8})
+	tlmPacketService, err := tlm.TlmServiceInit(proc.GswConfig.TelemetryPackets[0])
 	if err != nil {
-		fmt.Println("Write error:", err)
+		fmt.Println("Error:", err)
 	}
 
-	// Read from shared memory
-	data, err := tlm.TlmShmRead(10000)
-	if err != nil {
-		fmt.Println("Read error:", err)
-	} else {
-		fmt.Println("Read data:", data)
+	fmt.Println("Starting telemetry packet service")
+	for {
+		err := tlmPacketService.Write([]byte{1, 2, 3, 4, 5, 6, 7, 8})
+		if err != nil {
+			fmt.Println("Write error:", err)
+		}
+		time.Sleep(1 * time.Second)
+
+		err = tlmPacketService.Write([]byte{8, 7, 6, 5, 4, 3, 2, 1})
+		if err != nil {
+			fmt.Println("Write error:", err)
+		}
+		time.Sleep(1 * time.Second)
 	}
+
 }

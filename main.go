@@ -39,12 +39,10 @@ func decomInitialize() map[int]chan []byte {
 	channelMap := make(map[int]chan []byte)
 
 	for _, packet := range proc.GswConfig.TelemetryPackets {
-		rcvTelemChannel := make(chan []byte)
 		finalOutputChannel := make(chan []byte)
 		channelMap[packet.Port] = finalOutputChannel
 
-		go proc.PacketListener(packet, rcvTelemChannel)
-		go proc.EndianessConverter(packet, rcvTelemChannel, finalOutputChannel)
+		go proc.PacketListener(packet, finalOutputChannel)
 	}
 
 	return channelMap

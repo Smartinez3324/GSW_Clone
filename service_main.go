@@ -47,7 +47,7 @@ func decomInitialize(ctx context.Context) map[int]chan []byte {
 		channelMap[packet.Port] = finalOutputChannel
 
 		go func(packet proc.TelemetryPacket, ch chan []byte) {
-			proc.PacketListener(packet)
+			proc.TelemetryPacketWriter(packet)
 			<-ctx.Done()
 			close(ch)
 		}(packet, finalOutputChannel)

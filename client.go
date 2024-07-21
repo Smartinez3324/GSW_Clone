@@ -15,7 +15,7 @@ func main() {
 
 	outChan := make(chan []byte)
 	for _, packet := range proc.GswConfig.TelemetryPackets {
-		go proc.ReadTelemetryPacket(packet, outChan)
+		go proc.TelemetryPacketReader(packet, outChan)
 	}
 
 	for {

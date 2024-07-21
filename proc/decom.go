@@ -16,7 +16,7 @@ func getIpcShmHandler(packet TelemetryPacket, write bool) (*ipc.IpcShmHandler, e
 	return handler, nil
 }
 
-func PacketListener(packet TelemetryPacket) {
+func TelemetryPacketWriter(packet TelemetryPacket) {
 	packetSize := GetPacketSize(packet)
 	shmWriter, _ := getIpcShmHandler(packet, true)
 	if shmWriter == nil {
@@ -62,7 +62,7 @@ func PacketListener(packet TelemetryPacket) {
 	}
 }
 
-func ReadTelemetryPacket(packet TelemetryPacket, outChannel chan []byte) {
+func TelemetryPacketReader(packet TelemetryPacket, outChannel chan []byte) {
 	procReader, err := getIpcShmHandler(packet, false)
 	if err != nil {
 		fmt.Println("Error creating proc handler: %v\n", err)

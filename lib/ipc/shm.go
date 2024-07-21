@@ -38,20 +38,23 @@ func CreateIpcShmHandler(identifier string, size int, isWriter bool) (*IpcShmHan
 		if err != nil {
 			return nil, fmt.Errorf("Failed to create file: %v", err)
 		}
+		defer func(file *os.File) {
+			err := file.Close()
+			if err != nil {
+				fmt.Printf("Failed to close file: %v\n", err)
+			}
+		}(file)
 
-		if err := file.Truncate(int64(handler.size)); err != nil {
-			file.Close()
+		err = file.Truncate(int64(handler.size))
+		if err != nil {
 			return nil, fmt.Errorf("Failed to truncate file: %v", err)
 		}
-
 		handler.file = file
 
 		data, err := syscall.Mmap(int(file.Fd()), 0, handler.size, syscall.PROT_WRITE, syscall.MAP_SHARED)
 		if err != nil {
-			file.Close()
 			return nil, fmt.Errorf("Failed to memory map file: %v", err)
 		}
-
 		handler.data = data
 	} else {
 		file, err := os.OpenFile(filename, os.O_RDWR, 0666)
@@ -63,7 +66,6 @@ func CreateIpcShmHandler(identifier string, size int, isWriter bool) (*IpcShmHan
 
 		data, err := syscall.Mmap(int(file.Fd()), 0, handler.size, syscall.PROT_READ, syscall.MAP_SHARED)
 		if err != nil {
-			file.Close()
 			return nil, fmt.Errorf("Failed to memory map file: %v", err)
 		}
 

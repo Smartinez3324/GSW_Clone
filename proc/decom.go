@@ -7,9 +7,18 @@ import (
 	"strconv"
 )
 
+func getIpcShmHandler(packet TelemetryPacket, write bool) (*ipc.IpcShmHandler, error) {
+	handler, err := ipc.CreateIpcShmHandler(strconv.Itoa(packet.Port), GetPacketSize(packet), write)
+	if err != nil {
+		return nil, fmt.Errorf("Error creating shared memory handler: %v", err)
+	}
+
+	return handler, nil
+}
+
 func PacketListener(packet TelemetryPacket) {
 	packetSize := GetPacketSize(packet)
-	shmWriter, _ := ipc.CreateIpcShmHandler(strconv.Itoa(packet.Port), packetSize, true)
+	shmWriter, _ := getIpcShmHandler(packet, true)
 	if shmWriter == nil {
 		fmt.Printf("Failed to create shared memory writer\n")
 		return
@@ -54,7 +63,7 @@ func PacketListener(packet TelemetryPacket) {
 }
 
 func ReadTelemetryPacket(packet TelemetryPacket, outChannel chan []byte) {
-	procReader, err := ipc.CreateIpcShmHandler(strconv.Itoa(packet.Port), GetPacketSize(packet), false)
+	procReader, err := getIpcShmHandler(packet, false)
 	if err != nil {
 		fmt.Println("Error creating proc handler: %v\n", err)
 		return

@@ -65,7 +65,7 @@ func TelemetryPacketWriter(packet TelemetryPacket) {
 func TelemetryPacketReader(packet TelemetryPacket, outChannel chan []byte) {
 	procReader, err := getIpcShmHandler(packet, false)
 	if err != nil {
-		fmt.Println("Error creating proc handler: %v\n", err)
+		fmt.Printf("Error creating proc handler: %v\n", err)
 		return
 	}
 	defer procReader.Cleanup()
@@ -76,7 +76,7 @@ func TelemetryPacketReader(packet TelemetryPacket, outChannel chan []byte) {
 		if lastUpdate != latestUpdate {
 			data, err := procReader.Read()
 			if err != nil {
-				fmt.Println("Error reading from shared memory: %v\n", err)
+				fmt.Printf("Error reading from shared memory: %v\n", err)
 				continue
 			}
 			lastUpdate = latestUpdate

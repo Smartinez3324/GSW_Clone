@@ -2,33 +2,31 @@ package proc
 
 import (
 	"fmt"
+	"github.com/AarC10/GSW-V2/lib/ipc"
 	"net"
+	"strconv"
 )
 
-func getPacketSize(packet TelemetryPacket) int {
-	size := 0
-	for _, measurementName := range packet.Measurements {
-		measurement, err := FindMeasurementByName(GswConfig.Measurements, measurementName)
-		if err != nil {
-			fmt.Printf("\t\tMeasurement '%s' not found: %v\n", measurementName, err)
-			continue
-		}
-		size += measurement.Size
+func getIpcShmHandler(packet TelemetryPacket, write bool) (*ipc.IpcShmHandler, error) {
+	handler, err := ipc.CreateIpcShmHandler(strconv.Itoa(packet.Port), GetPacketSize(packet), write)
+	if err != nil {
+		return nil, fmt.Errorf("Error creating shared memory handler: %v", err)
 	}
-	return size
+
+	return handler, nil
 }
 
-func byteSwap(data []byte, startIndex int, stopIndex int) {
-	for i, j := startIndex, stopIndex; i < j; i, j = i+1, j-1 {
-		data[i], data[j] = data[j], data[i]
+func TelemetryPacketWriter(packet TelemetryPacket) {
+	packetSize := GetPacketSize(packet)
+	shmWriter, _ := getIpcShmHandler(packet, true)
+	if shmWriter == nil {
+		fmt.Printf("Failed to create shared memory writer\n")
+		return
 	}
-}
+	defer shmWriter.Cleanup()
 
-func PacketListener(packet TelemetryPacket, channel chan []byte) {
-	packetSize := getPacketSize(packet)
 	fmt.Printf("Packet size for port %d: %d\n", packet.Port, packetSize)
 
-	// Listen over UDP
 	addr, err := net.ResolveUDPAddr("udp", fmt.Sprintf(":%d", packet.Port))
 	if err != nil {
 		fmt.Printf("Error resolving UDP address: %v\n", err)
@@ -54,53 +52,35 @@ func PacketListener(packet TelemetryPacket, channel chan []byte) {
 		}
 
 		if n == packetSize {
-
-			channel <- buffer[:n] // Send data over channel
+			err := shmWriter.Write(buffer)
+			if err != nil {
+				fmt.Printf("Error writing to shared memory: %v\n", err)
+			}
 		} else {
 			fmt.Printf("Received packet of incorrect size. Expected: %d, Received: %d\n", packetSize, n)
 		}
 	}
 }
 
-func EndianessConverter(packet TelemetryPacket, inChannel chan []byte, outChannel chan []byte) {
-	byteIndicesToSwap := make([][]int, 0)
-
-	startIndice := 0
-	packetSize := 0
-	for _, measurementName := range packet.Measurements {
-		measurement, err := FindMeasurementByName(GswConfig.Measurements, measurementName)
-		if err != nil {
-			fmt.Printf("\t\tMeasurement '%s' not found: %v\n", measurementName, err)
-			continue
-		}
-
-		if measurement.Endianness == "little" {
-			byteIndicesToSwap = append(byteIndicesToSwap, []int{startIndice, startIndice + measurement.Size - 1})
-		}
-
-		startIndice += measurement.Size
-		packetSize += measurement.Size
+func TelemetryPacketReader(packet TelemetryPacket, outChannel chan []byte) {
+	procReader, err := getIpcShmHandler(packet, false)
+	if err != nil {
+		fmt.Printf("Error creating proc handler: %v\n", err)
+		return
 	}
+	defer procReader.Cleanup()
 
+	lastUpdate := procReader.LastUpdate()
 	for {
-		rcvData := <-inChannel
-		data := make([]byte, packetSize)
-		copy(data, rcvData)
-
-		for _, byteIndices := range byteIndicesToSwap {
-			byteSwap(data, byteIndices[0], byteIndices[1])
+		latestUpdate := procReader.LastUpdate()
+		if lastUpdate != latestUpdate {
+			data, err := procReader.Read()
+			if err != nil {
+				fmt.Printf("Error reading from shared memory: %v\n", err)
+				continue
+			}
+			lastUpdate = latestUpdate
+			outChannel <- data
 		}
-
-		outChannel <- data
-	}
-}
-
-// TODO: Placeholder consumer function. Remove once feature for publishing data is complete
-func TestReceiver(channel chan []byte) {
-	i := 0
-	for {
-		data := <-channel
-		fmt.Printf("Packet %d: %v\n", i, data)
-		i++
 	}
 }

@@ -1,8 +1,12 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"github.com/AarC10/GSW-V2/proc"
+	"os"
+	"os/signal"
+	"syscall"
 )
 
 func printTelemetryPackets() {
@@ -35,28 +39,41 @@ func vcmInitialize() {
 	printTelemetryPackets()
 }
 
-func decomInitialize() map[int]chan []byte {
+func decomInitialize(ctx context.Context) map[int]chan []byte {
 	channelMap := make(map[int]chan []byte)
 
 	for _, packet := range proc.GswConfig.TelemetryPackets {
-		rcvTelemChannel := make(chan []byte)
 		finalOutputChannel := make(chan []byte)
 		channelMap[packet.Port] = finalOutputChannel
 
-		go proc.PacketListener(packet, rcvTelemChannel)
-		go proc.EndianessConverter(packet, rcvTelemChannel, finalOutputChannel)
+		go func(packet proc.TelemetryPacket, ch chan []byte) {
+			proc.TelemetryPacketWriter(packet)
+			<-ctx.Done()
+			close(ch)
+		}(packet, finalOutputChannel)
 	}
 
 	return channelMap
 }
 
 func main() {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	// Setup signal handling
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, syscall.SIGTERM, syscall.SIGINT)
+
+	go func() {
+		sig := <-sigs
+		fmt.Printf("Received signal: %s\n", sig)
+		cancel()
+	}()
+
 	vcmInitialize()
-	channelMap := decomInitialize()
+	decomInitialize(ctx)
 
-	for _, channel := range channelMap {
-		go proc.TestReceiver(channel)
-	}
-
-	select {}
+	// Wait for context cancellation or signal handling
+	<-ctx.Done()
+	fmt.Println("Shutting down...")
 }

@@ -10,7 +10,8 @@ import (
 )
 
 func main() {
-	_, err := proc.ParseConfig("data/config/backplane.yaml")
+	//_, err := proc.ParseConfig("data/config/backplane.yaml")
+	_, err := proc.ParseConfig("data/test/good.yaml")
 	if err != nil {
 		fmt.Printf("Error parsing YAML: %v\n", err)
 		return
@@ -26,11 +27,12 @@ func main() {
 		fmt.Print("\033[H\033[2J")
 
 		var sb strings.Builder
-		var offset int
 
 		for _, packet := range proc.GswConfig.TelemetryPackets {
 			// Print the measurement name, base-10 value and base-16 value. One for each line
 			// Format: MeasurementName: Value (Base-10) [(Base-16)]
+
+			offset := 0
 			for _, measurementName := range packet.Measurements {
 				measurement, err := proc.FindMeasurementByName(proc.GswConfig.Measurements, measurementName)
 				if err != nil {
@@ -38,7 +40,6 @@ func main() {
 					continue
 				}
 
-				// Get the value of the measurement
 				value := tlm.InterpretMeasurementValue(*measurement, data[offset:offset+measurement.Size])
 				if err != nil {
 					fmt.Printf("\t\tError interpreting measurement value: %v\n", err)

@@ -50,9 +50,9 @@ func main() {
 	// Clear screen
 	fmt.Print("\033[2J")
 
-	outChan := make(chan []byte)
 	startLine := 0
 	for _, packet := range proc.GswConfig.TelemetryPackets {
+		outChan := make(chan []byte)
 		go proc.TelemetryPacketReader(packet, outChan)
 		go printTelemetryPacket(startLine, packet, outChan)
 		startLine += len(packet.Measurements) + 1

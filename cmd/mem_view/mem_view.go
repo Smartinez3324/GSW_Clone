@@ -5,7 +5,10 @@ import (
 	"github.com/AarC10/GSW-V2/lib/tlm"
 	"github.com/AarC10/GSW-V2/lib/util"
 	"github.com/AarC10/GSW-V2/proc"
+	"os"
+	"os/signal"
 	"strings"
+	"syscall"
 )
 
 func printTelemetryPacket(startLine int, packet proc.TelemetryPacket, rcvChan chan []byte) {
@@ -15,7 +18,7 @@ func printTelemetryPacket(startLine int, packet proc.TelemetryPacket, rcvChan ch
 
 		data := <-rcvChan
 
-		// Print the measurement name, base-10 value and base-16 value. One for each line
+		// Print the measurement name, base-10 value, and base-16 value. One for each line
 		// Format: MeasurementName: Value (Base-10) [(Base-16)]
 		sb.WriteString(fmt.Sprintf("\033[%d;0H", startLine))
 		for _, measurementName := range packet.Measurements {
@@ -40,7 +43,6 @@ func printTelemetryPacket(startLine int, packet proc.TelemetryPacket, rcvChan ch
 }
 
 func main() {
-	//_, err := proc.ParseConfig("data/config/backplane.yaml")
 	_, err := proc.ParseConfig("data/test/good.yaml")
 	if err != nil {
 		fmt.Printf("Error parsing YAML: %v\n", err)
@@ -50,6 +52,9 @@ func main() {
 	// Clear screen
 	fmt.Print("\033[2J")
 
+	// Hide the cursor
+	fmt.Print("\033[?25l")
+
 	startLine := 0
 	for _, packet := range proc.GswConfig.TelemetryPackets {
 		outChan := make(chan []byte)
@@ -58,5 +63,11 @@ func main() {
 		startLine += len(packet.Measurements) + 1
 	}
 
-	select {}
+	// Set up channel to catch interrupt signals
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+
+	<-sigChan
+	fmt.Print("\033[2J")
+	fmt.Print("\033[?25h")
 }

@@ -5,24 +5,26 @@ import (
 	"strings"
 )
 
-func BytesToString(b []byte, base int, groupSize ...int) string {
+func Base2String(b []byte, groupSize int) string {
+	return formatBytes(b, 2, groupSize, true)
+}
+
+func Base16String(b []byte, groupSize int) string {
+	return formatBytes(b, 16, groupSize, true)
+}
+
+func Base2StringNoHeader(b []byte, groupSize int) string {
+	return formatBytes(b, 2, groupSize, false)
+}
+
+func Base16StringNoHeader(b []byte, groupSize int) string {
+	return formatBytes(b, 16, groupSize, false)
+}
+
+func formatBytes(b []byte, base int, groupSize int, includePrefix bool) string {
 	var result strings.Builder
 	var prefix string
 	var formatString string
-
-	defaultGroupSize := 2
-	if base == 2 {
-		defaultGroupSize = 4
-	}
-	size := defaultGroupSize
-	if len(groupSize) > 0 {
-		size = groupSize[0]
-	}
-
-	includePrefix := true
-	if len(groupSize) > 1 {
-		includePrefix = groupSize[1] != 0
-	}
 
 	switch base {
 	case 2:
@@ -32,14 +34,14 @@ func BytesToString(b []byte, base int, groupSize ...int) string {
 		prefix = "0x"
 		formatString = "%02X"
 	default:
-		panic("unsupported base")
+		panic("Unsupported base")
 	}
 
 	for i, byteValue := range b {
-		if i > 0 && i%size == 0 {
+		if i > 0 && i%groupSize == 0 {
 			result.WriteString(" ")
 		}
-		if includePrefix && i%size == 0 {
+		if includePrefix && i%groupSize == 0 {
 			result.WriteString(prefix)
 		}
 		result.WriteString(fmt.Sprintf(formatString, byteValue))

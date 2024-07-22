@@ -45,7 +45,7 @@ func main() {
 					continue
 				}
 
-				sb.WriteString(fmt.Sprintf("%s: %v [%s]\n", measurementName, value, util.BytesToString(data[offset:offset+measurement.Size], 16, 1, 0)))
+				sb.WriteString(fmt.Sprintf("%s: %v [%s]\n", measurementName, value, util.Base16String(data[offset:offset+measurement.Size], 1)))
 				offset += measurement.Size
 			}
 		}

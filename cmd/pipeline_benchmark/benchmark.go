@@ -1,37 +1,52 @@
 package main
 
 import (
+	"encoding/binary"
 	"fmt"
-	"github.com/AarC10/GSW-V2/lib/tlm"
 	"github.com/AarC10/GSW-V2/proc"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 )
 
 func calculateTimestamps(startLine int, packet proc.TelemetryPacket, rcvChan chan []byte) {
+	var averageDiff uint64
+
+	udpTimestampMeas, err := proc.FindMeasurementByName(proc.GswConfig.Measurements, "UdpSendTimestamp")
+	if err != nil {
+		fmt.Printf("\t\tMeasurement 'UdpSendTimestamp' not found: %v\n", err)
+		return
+	}
 
 	for {
-		// Get current timestamp in milliseconds
 		data := <-rcvChan
-		timestamp := time.Now().UnixNano() / int64(time.Millisecond)
 
-		udpTimestampMeas, err := proc.FindMeasurementByName(proc.GswConfig.Measurements, "UdpSendTimestamp")
-		if err != nil {
-			fmt.Printf("\t\tMeasurement 'UdpSendTimestamp' not found: %v\n", err)
-			continue
+		timestamp := uint64(time.Now().UnixNano() / int64(time.Millisecond))
+		udpTimestamp := binary.BigEndian.Uint64(data)
+		shmTimestamp := binary.BigEndian.Uint64(data[udpTimestampMeas.Size:])
+
+		// Calculate the difference between the two timestamps
+		udpShmDiff := shmTimestamp - udpTimestamp
+		benchShmDiff := timestamp - shmTimestamp
+		totalDiff := timestamp - udpTimestamp
+		if averageDiff == 0 {
+			averageDiff = totalDiff
 		}
 
-		shmTimestampMeas, err := proc.FindMeasurementByName(proc.GswConfig.Measurements, "ShmSendTimestamp")
-		if err != nil {
-			fmt.Printf("\t\tMeasurement 'ShmSendTimestamp' not found: %v\n", err)
-			continue
-		}
+		averageDiff = (averageDiff + totalDiff) / 2
 
-		// Interpret each timestam as a uint64
-		udpTimestamp := tlm.InterpretMeasurementValue(*udpTimestampMeas, data)
-
+		var sb strings.Builder
+		sb.WriteString(fmt.Sprintf("\033[%d;0H", startLine))
+		sb.WriteString(packet.Name + ":\n")
+		sb.WriteString(fmt.Sprintf("\tUDP Timestamp: %d\n", udpTimestamp))
+		sb.WriteString(fmt.Sprintf("\tSHM Timestamp: %d\n", shmTimestamp))
+		sb.WriteString(fmt.Sprintf("\tUDP-SHM Diff: %d\n", udpShmDiff))
+		sb.WriteString(fmt.Sprintf("\tBench-SHM Diff: %d\n", benchShmDiff))
+		sb.WriteString(fmt.Sprintf("\tTotal Diff: %d\n", totalDiff))
+		sb.WriteString(fmt.Sprintf("\tAverage Diff: %d\n", averageDiff))
+		fmt.Print(sb.String())
 	}
 }
 
@@ -51,7 +66,7 @@ func main() {
 	for i, packet := range proc.GswConfig.TelemetryPackets {
 		outChan := make(chan []byte)
 		go proc.TelemetryPacketReader(packet, outChan)
-		go calculateTimestamps(i, packet, outChan)
+		go calculateTimestamps(i*8, packet, outChan)
 	}
 
 	// Set up channel to catch interrupt signals

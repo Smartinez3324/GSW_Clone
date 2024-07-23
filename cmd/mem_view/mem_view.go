@@ -26,10 +26,6 @@ func buildString(packet proc.TelemetryPacket, data []byte, startLine int) string
 		}
 
 		value := tlm.InterpretMeasurementValue(*measurement, data[offset:offset+measurement.Size])
-		if err != nil {
-			fmt.Printf("\t\tError interpreting measurement value: %v\n", err)
-			continue
-		}
 
 		sb.WriteString(fmt.Sprintf("%s: %v [%s]\n", measurementName, value, util.Base16String(data[offset:offset+measurement.Size], 1)))
 		offset += measurement.Size

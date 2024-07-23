@@ -30,6 +30,7 @@ func InterpretUnsignedInteger(data []byte, endianness string) interface{} {
 		fmt.Printf("Unsupported data length: %d\n", len(data))
 		return nil
 	}
+	// TODO: Support non-aligned bytes less than 8?
 }
 
 func InterpretSignedInteger(data []byte, endianness string) interface{} {

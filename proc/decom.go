@@ -1,12 +1,10 @@
 package proc
 
 import (
-	"encoding/binary"
 	"fmt"
 	"github.com/AarC10/GSW-V2/lib/ipc"
 	"net"
 	"strconv"
-	"time"
 )
 
 func getIpcShmHandler(packet TelemetryPacket, write bool) (*ipc.IpcShmHandler, error) {
@@ -54,7 +52,7 @@ func TelemetryPacketWriter(packet TelemetryPacket) {
 		}
 
 		// TODO: Make this a config
-		binary.BigEndian.PutUint64(buffer[8:], uint64(time.Now().UnixNano()))
+		//binary.BigEndian.PutUint64(buffer[8:], uint64(time.Now().UnixNano()))
 
 		if n == packetSize {
 			err := shmWriter.Write(buffer)

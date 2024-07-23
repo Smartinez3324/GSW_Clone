@@ -32,7 +32,8 @@ func printTelemetryPackets() {
 func vcmInitialize() {
 	// TODO: Need to set up configuration stuff
 	//_, err := proc.ParseConfig("data/config/backplane.yaml")
-	_, err := proc.ParseConfig("data/test/good.yaml")
+	//_, err := proc.ParseConfig("data/test/good.yaml")
+	_, err := proc.ParseConfig("data/test/benchmark.yaml")
 	if err != nil {
 		fmt.Printf("Error parsing YAML: %v\n", err)
 		return

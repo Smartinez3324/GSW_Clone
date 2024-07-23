@@ -51,6 +51,9 @@ func TelemetryPacketWriter(packet TelemetryPacket) {
 			continue
 		}
 
+		// TODO: Make this a config
+		//binary.BigEndian.PutUint64(buffer[8:], uint64(time.Now().UnixNano()))
+
 		if n == packetSize {
 			err := shmWriter.Write(buffer)
 			if err != nil {

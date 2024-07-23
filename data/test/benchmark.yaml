@@ -1,0 +1,76 @@
+name: benchmark
+
+measurements:
+  - name: UdpSendTimestamp
+    size: 8
+    type: int
+    unsigned: true
+  - name: ShmSendTimestamp
+    size: 8
+    type: int
+    unsigned: true
+
+  - name: EightBit
+    size: 1
+    type: int
+
+  - name: SixteenBit
+    size: 2
+    type: int
+
+  - name: ThirtyTwoBit
+    size: 4
+    type: int
+
+  - name: SixtyFourBit
+    size: 8
+    type: int
+
+  - name: OneKilobyte
+    size: 1008 # Not actually 1KB, but when we add the 16 total bytes from the timestamps, it will be
+    type: int
+
+telemetry_packets:
+  - name: TimestampsOnly
+    port: 10000
+    measurements:
+      - UdpSendTimestamp
+      - ShmSendTimestamp
+  - name: 17Bytes
+    port: 10001
+    measurements:
+      - UdpSendTimestamp
+      - ShmSendTimestamp
+      - EightBit
+  - name: 26Bytes
+    port: 10002
+    measurements:
+      - UdpSendTimestamp
+      - ShmSendTimestamp
+      - EightBit
+      - SixteenBit
+  - name: 30Bytes
+    port: 10003
+    measurements:
+      - UdpSendTimestamp
+      - ShmSendTimestamp
+      - EightBit
+      - SixteenBit
+      - ThirtyTwoBit
+  - name: 38Bytes
+    port: 10004
+    measurements:
+      - UdpSendTimestamp
+      - ShmSendTimestamp
+      - EightBit
+      - SixteenBit
+      - ThirtyTwoBit
+      - SixtyFourBit
+  - name: OneKbyte
+    port: 10005
+    measurements:
+      - UdpSendTimestamp
+      - ShmSendTimestamp
+      - OneKilobyte
+
+

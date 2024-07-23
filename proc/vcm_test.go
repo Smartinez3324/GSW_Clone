@@ -133,3 +133,17 @@ func TestMeasurementToString(test *testing.T) {
 	expected = "Name: Test, Size: 4, Unsigned, Endianness: little"
 	CompareMeasurementString(expected, noType.String(), test)
 }
+
+func TestGetPacketSize(test *testing.T) {
+	config, _ := ParseConfig(TEST_DATA_DIR + "good.yaml")
+	size := GetPacketSize(config.TelemetryPackets[0])
+	if size != 10 {
+		test.Errorf("Expected 10, got %d", size)
+	}
+
+	// Test no measurement found
+	size = GetPacketSize(TelemetryPacket{Name: "Missing", Port: 10000, Measurements: []string{"Missing"}})
+	if size != 0 {
+		test.Errorf("Expected 0, got %d", size)
+	}
+}

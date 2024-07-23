@@ -67,6 +67,7 @@ func ParseConfig(filename string) (*Configuration, error) {
 	return &GswConfig, nil
 }
 
+// TODO: Map
 func FindMeasurementByName(measurements []Measurement, name string) (*Measurement, error) {
 	for _, meas := range measurements {
 		if meas.Name == name {

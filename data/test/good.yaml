@@ -22,13 +22,13 @@ measurements:
 
 telemetry_packets:
   - name: Default
-    port: 0
+    port: 10000
     measurements:
       - Default
       - Unsigned
       - SixteenBit
   - name: Endian
-    port: 1
+    port: 10001
     measurements:
       - BigEndian
       - LittleEndian

@@ -87,8 +87,8 @@ func TestParseConfig(test *testing.T) {
 	compareMeasurements(Measurement{Name: "Unsigned", Size: 4, Type: "int", Unsigned: true, Endianness: "big"}, config.Measurements[3], test)
 	compareMeasurements(Measurement{Name: "SixteenBit", Size: 2, Type: "int", Unsigned: false, Endianness: "big"}, config.Measurements[4], test)
 
-	compareTelemetryPackets(TelemetryPacket{Name: "Default", Port: 0, Measurements: []string{"Default", "Unsigned", "SixteenBit"}}, config.TelemetryPackets[0], test)
-	compareTelemetryPackets(TelemetryPacket{Name: "Endian", Port: 1, Measurements: []string{"BigEndian", "LittleEndian"}}, config.TelemetryPackets[1], test)
+	compareTelemetryPackets(TelemetryPacket{Name: "Default", Port: 10000, Measurements: []string{"Default", "Unsigned", "SixteenBit"}}, config.TelemetryPackets[0], test)
+	compareTelemetryPackets(TelemetryPacket{Name: "Endian", Port: 10001, Measurements: []string{"BigEndian", "LittleEndian"}}, config.TelemetryPackets[1], test)
 }
 
 func TestParseConfigMissingMeasurement(test *testing.T) {

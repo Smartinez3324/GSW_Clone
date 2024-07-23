@@ -39,9 +39,11 @@ func CreateIpcShmHandler(identifier string, size int, isWriter bool) (*IpcShmHan
 			return nil, fmt.Errorf("Failed to create file: %v", err)
 		}
 		defer func(file *os.File) {
-			err := file.Close()
-			if err != nil {
-				fmt.Printf("Failed to close file: %v\n", err)
+			if file != nil {
+				err := file.Close()
+				if err != nil {
+					fmt.Printf("Failed to close file: %v\n", err)
+				}
 			}
 		}(file)
 

@@ -11,34 +11,40 @@ import (
 	"syscall"
 )
 
-func printTelemetryPacket(startLine int, packet proc.TelemetryPacket, rcvChan chan []byte) {
-	for {
-		var sb strings.Builder
-		offset := 0
+func buildString(packet proc.TelemetryPacket, data []byte, startLine int) string {
+	var sb strings.Builder
+	offset := 0
 
-		data := <-rcvChan
-
-		// Print the measurement name, base-10 value, and base-16 value. One for each line
-		// Format: MeasurementName: Value (Base-10) [(Base-16)]
-		sb.WriteString(fmt.Sprintf("\033[%d;0H", startLine))
-		for _, measurementName := range packet.Measurements {
-			measurement, err := proc.FindMeasurementByName(proc.GswConfig.Measurements, measurementName)
-			if err != nil {
-				fmt.Printf("\t\tMeasurement '%s' not found: %v\n", measurementName, err)
-				continue
-			}
-
-			value := tlm.InterpretMeasurementValue(*measurement, data[offset:offset+measurement.Size])
-			if err != nil {
-				fmt.Printf("\t\tError interpreting measurement value: %v\n", err)
-				continue
-			}
-
-			sb.WriteString(fmt.Sprintf("%s: %v [%s]\n", measurementName, value, util.Base16String(data[offset:offset+measurement.Size], 1)))
-			offset += measurement.Size
+	// Print the measurement name, base-10 value, and base-16 value. One for each line
+	// Format: MeasurementName: Value (Base-10) [(Base-16)]
+	sb.WriteString(fmt.Sprintf("\033[%d;0H", startLine))
+	for _, measurementName := range packet.Measurements {
+		measurement, err := proc.FindMeasurementByName(proc.GswConfig.Measurements, measurementName)
+		if err != nil {
+			fmt.Printf("\t\tMeasurement '%s' not found: %v\n", measurementName, err)
+			continue
 		}
 
-		fmt.Print(sb.String())
+		value := tlm.InterpretMeasurementValue(*measurement, data[offset:offset+measurement.Size])
+		if err != nil {
+			fmt.Printf("\t\tError interpreting measurement value: %v\n", err)
+			continue
+		}
+
+		sb.WriteString(fmt.Sprintf("%s: %v [%s]\n", measurementName, value, util.Base16String(data[offset:offset+measurement.Size], 1)))
+		offset += measurement.Size
+	}
+
+	return sb.String()
+}
+
+func printTelemetryPacket(startLine int, packet proc.TelemetryPacket, rcvChan chan []byte) {
+	fmt.Print(buildString(packet, make([]byte, proc.GetPacketSize(packet)), startLine))
+
+	for {
+		data := <-rcvChan
+		buildString(packet, data, startLine)
+		fmt.Print(buildString(packet, data, startLine))
 	}
 }
 

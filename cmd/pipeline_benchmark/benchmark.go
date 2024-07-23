@@ -23,7 +23,7 @@ func calculateTimestamps(startLine int, packet proc.TelemetryPacket, rcvChan cha
 	for {
 		data := <-rcvChan
 
-		timestamp := uint64(time.Now().UnixNano() / int64(time.Millisecond))
+		timestamp := uint64(time.Now().UnixNano())
 		udpTimestamp := binary.BigEndian.Uint64(data)
 		shmTimestamp := binary.BigEndian.Uint64(data[udpTimestampMeas.Size:])
 
@@ -42,6 +42,7 @@ func calculateTimestamps(startLine int, packet proc.TelemetryPacket, rcvChan cha
 		sb.WriteString(packet.Name + ":\n")
 		sb.WriteString(fmt.Sprintf("\tUDP Timestamp: %d\n", udpTimestamp))
 		sb.WriteString(fmt.Sprintf("\tSHM Timestamp: %d\n", shmTimestamp))
+		sb.WriteString(fmt.Sprintf("\tBench Timestamp: %d\n", timestamp))
 		sb.WriteString(fmt.Sprintf("\tUDP-SHM Diff: %d\n", udpShmDiff))
 		sb.WriteString(fmt.Sprintf("\tBench-SHM Diff: %d\n", benchShmDiff))
 		sb.WriteString(fmt.Sprintf("\tTotal Diff: %d\n", totalDiff))
@@ -66,7 +67,7 @@ func main() {
 	for i, packet := range proc.GswConfig.TelemetryPackets {
 		outChan := make(chan []byte)
 		go proc.TelemetryPacketReader(packet, outChan)
-		go calculateTimestamps(i*8, packet, outChan)
+		go calculateTimestamps(i*9, packet, outChan)
 	}
 
 	// Set up channel to catch interrupt signals

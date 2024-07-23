@@ -15,7 +15,7 @@ TELEMETRY_PACKETS = [
 SERVER_ADDRESS = 'localhost' 
 
 def create_packet(size):
-    timestamp = int(time.time() * 1000)
+    timestamp = time.time_ns()
     # UdpSendTimestamp (8 bytes), ShmSendTimestamp (8 bytes zeroed), followed by zeroed remaining bytes
     packet = struct.pack('>Q', timestamp) + b'\x00' * (size - 8)
     return packet
@@ -26,6 +26,7 @@ def send_packet(port, size):
         while True:
             packet = create_packet(size)
             sock.sendto(packet, server_address)
+            time.sleep(3)
 
 def run_test():
     while True:

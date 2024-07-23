@@ -29,22 +29,27 @@ func formatBytes(b []byte, base int, groupSize int, includePrefix bool) string {
 	switch base {
 	case 2:
 		prefix = "0b"
-		formatString = "%08b"
+		formatString = fmt.Sprintf("%%0%db", groupSize)
 	case 16:
 		prefix = "0x"
-		formatString = "%02X"
+		formatString = fmt.Sprintf("%%0%dX", groupSize)
 	default:
 		panic("Unsupported base")
 	}
 
-	for i, byteValue := range b {
-		if i > 0 && i%groupSize == 0 {
+	bytesForNumWritten := 0
+	for _, byteValue := range b {
+		if bytesForNumWritten >= groupSize {
 			result.WriteString(" ")
+			bytesForNumWritten = 0
+
 		}
-		if includePrefix && i%groupSize == 0 {
+
+		if bytesForNumWritten == 0 && includePrefix {
 			result.WriteString(prefix)
 		}
-		result.WriteString(fmt.Sprintf(formatString, byteValue))
+
+		bytesForNumWritten, _ = result.WriteString(fmt.Sprintf(formatString, byteValue))
 	}
 
 	return result.String()

@@ -1,0 +1,116 @@
+name: backplane
+
+type_definitions:
+  AccelerometerData:
+    - name: X
+      size: 4
+      type: float
+    - name: Y
+      size: 4
+      type: float
+    - name: Z
+      size: 4
+      type: float
+
+  BarometerData:
+    - name: Pressure
+      size: 4
+      type: float
+    - name: Temperature
+      size: 4
+      type: float
+
+  GyroscopeData:
+    - name: X
+      size: 4
+      type: float
+    - name: Y
+      size: 4
+      type: float
+    - name: Z
+      size: 4
+      type: float
+
+  MagnetometerData:
+    - name: X
+      size: 4
+      type: float
+    - name: Y
+      size: 4
+      type: float
+    - name: Z
+      size: 4
+      type: float
+
+  ShuntData:
+    - name: Current
+      size: 4
+      type: float
+    - name: Voltage
+      size: 4
+      type: float
+    - name: Power
+      size: 4
+      type: float
+
+  GnssPositioningData:
+    - name: Latitude
+      size: 8
+      type: double
+    - name: Longitude
+      size: 8
+      type: double
+    - name: Altitude
+      size: 4
+      type: float
+
+  TemperatureData:
+    - name: Temperature
+      size: 4
+      type: float
+
+measurements:
+  - name: ACCEL_X
+    size: 4
+    type: float
+    endianness: little
+  - name: ACCEL_Y
+    size: 4
+    type: float
+    endianness: little
+  - name: ACCEL_Z
+    size: 4
+    type: float
+    endianness: little
+  - name: GYRO_X
+    size: 4
+    type: float
+    endianness: little
+  - name: GYRO_Y
+    size: 4
+    type: float
+    endianness: little
+  - name: GYRO_Z
+    size: 4
+    type: float
+    endianness: little
+  - name: PRESSURE
+    size: 4
+    type: float
+    endianness: little
+  - name: TEMPERATURE
+    size: 4
+    type: float
+    endianness: little
+telemetry_packets:
+  - name: SensorModule100Hz
+    port: 10000
+    measurements:
+      - ACCEL_X
+      - ACCEL_Y
+      - ACCEL_Z
+      - GYRO_X
+      - GYRO_Y
+      - GYRO_Z
+      - PRESSURE
+      - TEMPERATURE

@@ -48,6 +48,8 @@ func calculateTimestamps(startLine int, packet proc.TelemetryPacket, rcvChan cha
 		sb.WriteString(fmt.Sprintf("\tTotal Diff: %d\n", totalDiff))
 		sb.WriteString(fmt.Sprintf("\tAverage Diff: %d\n", averageDiff))
 		fmt.Print(sb.String())
+
+		time.Sleep(3 * time.Second)
 	}
 }
 

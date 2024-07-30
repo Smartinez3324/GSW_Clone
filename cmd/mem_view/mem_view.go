@@ -27,7 +27,7 @@ func buildString(packet proc.TelemetryPacket, data []byte, startLine int) string
 
 		value := tlm.InterpretMeasurementValue(*measurement, data[offset:offset+measurement.Size])
 
-		sb.WriteString(fmt.Sprintf("%s: %v [%s]\n", measurementName, value, util.Base16String(data[offset:offset+measurement.Size], 1)))
+		sb.WriteString(fmt.Sprintf("%s: %v [%s]          \n", measurementName, value, util.Base16String(data[offset:offset+measurement.Size], 1)))
 		offset += measurement.Size
 	}
 
@@ -45,7 +45,7 @@ func printTelemetryPacket(startLine int, packet proc.TelemetryPacket, rcvChan ch
 }
 
 func main() {
-	_, err := proc.ParseConfig("data/test/good.yaml")
+	_, err := proc.ParseConfig("data/config/demo.yaml")
 	if err != nil {
 		fmt.Printf("Error parsing YAML: %v\n", err)
 		return

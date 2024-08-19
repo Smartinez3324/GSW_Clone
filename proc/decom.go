@@ -25,7 +25,7 @@ func TelemetryPacketWriter(packet TelemetryPacket) {
 	}
 	defer shmWriter.Cleanup()
 
-	fmt.Printf("Packet size for port %d: %d\n", packet.Port, packetSize)
+	fmt.Printf("Packet size for port %d: %d bytes %d bits\n", packet.Port, packetSize, packetSize*8)
 
 	addr, err := net.ResolveUDPAddr("udp", fmt.Sprintf(":%d", packet.Port))
 	if err != nil {

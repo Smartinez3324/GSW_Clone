@@ -70,23 +70,106 @@ type_definitions:
       type: float
 
 measurements:
-  - name: ADXL375_X
+  - name: PRIM_ACCEL_X
     size: 4
     type: float
     endianness: little
-  - name: ADXL375_Y
+  - name: PRIM_ACCEL_Y
     size: 4
     type: float
     endianness: little
-  - name: ADXL375_Z
+  - name: PRIM_ACCEL_Z
     size: 4
     type: float
     endianness: little
-
+    
+  - name: SECO_ACCEL_X
+    size: 4
+    type: float
+    endianness: little
+  - name: SECO_ACCEL_Y
+    size: 4
+    type: float
+    endianness: little
+  - name: SECO_ACCEL_Z
+    size: 4
+    type: float
+    endianness: little
+    
+  - name: PRIM_BARO_PRESS
+    size: 4
+    type: float
+    endianness: little
+  - name: PRIM_BARO_TEMP
+    size: 4
+    type: float
+    endianness: little
+    
+  - name: SECO_BARO_PRESS
+    size: 4
+    type: float
+    endianness: little
+  - name: SECO_BARO_TEMP
+    size: 4
+    type: float
+    endianness: little
+    
+  - name: GYRO_X
+    size: 4
+    type: float
+    endianness: little
+  - name: GYRO_Y
+    size: 4
+    type: float
+    endianness: little
+  - name: PRIM_ACCEL_Z
+    size: 4
+    type: float
+    endianness: little
+  - name: GYRO_Z
+    size: 4
+    type: float
+    endianness: little
+    
+  - name: MAGN_X
+    size: 4
+    type: float
+    endianness: little
+  - name: MAGN_Y
+    size: 4
+    type: float
+    endianness: little
+  - name: PRIM_ACCEL_Z
+    size: 4
+    type: float
+    endianness: little
+  - name: MAGN_Z
+    size: 4
+    type: float
+    endianness: little
+    
+  - name: TEMPERATURE
+    size: 4
+    type: float
+    endianness: little
 telemetry_packets:
-  - name: SensorModule100Hz
-    port: 10000
+  - name: SensorModule
+    port: 12000
     measurements:
-      - ADXL375_X
-      - ADXL375_Y
-      - ADXL375_Z
+      - PRIM_BARO_PRESS
+      - PRIM_BARO_TEMP
+      - SECO_BARO_PRESS
+      - SECO_BARO_TEMP
+      - PRIM_ACCEL_X
+      - PRIM_ACCEL_Y
+      - PRIM_ACCEL_Z
+      - SECO_ACCEL_X
+      - SECO_ACCEL_Y
+      - SECO_ACCEL_Z
+      - GYRO_X
+      - GYRO_Y
+      - GYRO_Z
+      - MAGN_X
+      - MAGN_Y
+      - MAGN_Z
+      - TEMPERATURE

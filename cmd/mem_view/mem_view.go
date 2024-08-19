@@ -45,7 +45,7 @@ func printTelemetryPacket(startLine int, packet proc.TelemetryPacket, rcvChan ch
 }
 
 func main() {
-	_, err := proc.ParseConfig("data/config/demo.yaml")
+	_, err := proc.ParseConfig("data/config/backplane.yaml")
 	if err != nil {
 		fmt.Printf("Error parsing YAML: %v\n", err)
 		return

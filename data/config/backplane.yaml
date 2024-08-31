@@ -154,7 +154,7 @@ measurements:
     endianness: little
 telemetry_packets:
   - name: SensorModule
-    port: 12000
+    port: 12100
     measurements:
       - PRIM_BARO_PRESS
       - PRIM_BARO_TEMP

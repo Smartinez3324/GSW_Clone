@@ -9,7 +9,7 @@ import (
 
 type Configuration struct {
 	Name             string            `yaml:"name"`
-	Measurements     []Measurement     `yaml:"measurements"`
+	Measurements     map[string]Measurement     `yaml:"measurements"`
 	TelemetryPackets []TelemetryPacket `yaml:"telemetry_packets"`
 }
 
@@ -68,12 +68,11 @@ func ParseConfig(filename string) (*Configuration, error) {
 }
 
 // TODO: Map
-func FindMeasurementByName(measurements []Measurement, name string) (*Measurement, error) {
-	for _, meas := range measurements {
-		if meas.Name == name {
-			return &meas, nil
-		}
+func FindMeasurementByName(measurements map[string]Measurement, name string) (*Measurement, error) {
+	if val, ok := measurements[name]; ok {
+		return &val, nil 
 	}
+
 	return nil, fmt.Errorf("measurement '%s' not found", name)
 }
 

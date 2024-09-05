@@ -58,7 +58,9 @@ func ParseConfig(filename string) (*Configuration, error) {
 		}
 
 		if GswConfig.Measurements[i].Endianness == "" {
-			GswConfig.Measurements[i].Endianness = "big" // Default to big endian
+			entry := GswConfig.Measurements[i] // Workaround to avoid UnaddressableFieldAssign
+			entry.Endianess = "big" // Default to big endian
+			GswConfig.Measurements[i] = entry
 		} else if GswConfig.Measurements[i].Endianness != "little" && GswConfig.Measurements[i].Endianness != "big" {
 			return nil, fmt.Errorf("Endianess not specified as big or little got %s", GswConfig.Measurements[i].Endianness)
 		}

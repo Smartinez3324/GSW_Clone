@@ -2,15 +2,16 @@ package proc
 
 import (
 	"fmt"
-	"gopkg.in/yaml.v2"
 	"os"
 	"strings"
+
+	"gopkg.in/yaml.v2"
 )
 
 type Configuration struct {
-	Name             string            `yaml:"name"`
-	Measurements     map[string]Measurement     `yaml:"measurements"`
-	TelemetryPackets []TelemetryPacket `yaml:"telemetry_packets"`
+	Name             string                 `yaml:"name"`
+	Measurements     map[string]Measurement `yaml:"measurements"`
+	TelemetryPackets []TelemetryPacket      `yaml:"telemetry_packets"`
 }
 
 type Measurement struct {
@@ -59,7 +60,7 @@ func ParseConfig(filename string) (*Configuration, error) {
 
 		if GswConfig.Measurements[i].Endianness == "" {
 			entry := GswConfig.Measurements[i] // Workaround to avoid UnaddressableFieldAssign
-			entry.Endianess = "big" // Default to big endian
+			entry.Endianness = "big"           // Default to big endian
 			GswConfig.Measurements[i] = entry
 		} else if GswConfig.Measurements[i].Endianness != "little" && GswConfig.Measurements[i].Endianness != "big" {
 			return nil, fmt.Errorf("Endianess not specified as big or little got %s", GswConfig.Measurements[i].Endianness)
@@ -72,7 +73,7 @@ func ParseConfig(filename string) (*Configuration, error) {
 // TODO: Map
 func FindMeasurementByName(measurements map[string]Measurement, name string) (*Measurement, error) {
 	if val, ok := measurements[name]; ok {
-		return &val, nil 
+		return &val, nil
 	}
 
 	return nil, fmt.Errorf("measurement '%s' not found", name)

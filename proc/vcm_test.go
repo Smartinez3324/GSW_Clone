@@ -81,11 +81,11 @@ func TestParseConfig(test *testing.T) {
 		test.Errorf("Expected 2 telemetry packets, got %d", len(config.TelemetryPackets))
 	}
 
-	compareMeasurements(Measurement{Name: "Default", Size: 4, Type: "int", Unsigned: false, Endianness: "big"}, config.Measurements[0], test)
-	compareMeasurements(Measurement{Name: "BigEndian", Size: 4, Type: "int", Unsigned: false, Endianness: "big"}, config.Measurements[1], test)
-	compareMeasurements(Measurement{Name: "LittleEndian", Size: 4, Type: "int", Unsigned: false, Endianness: "little"}, config.Measurements[2], test)
-	compareMeasurements(Measurement{Name: "Unsigned", Size: 4, Type: "int", Unsigned: true, Endianness: "big"}, config.Measurements[3], test)
-	compareMeasurements(Measurement{Name: "SixteenBit", Size: 2, Type: "int", Unsigned: false, Endianness: "big"}, config.Measurements[4], test)
+	compareMeasurements(Measurement{Name: "Default", Size: 4, Type: "int", Unsigned: false, Endianness: "big"}, config.Measurements["Default"], test)
+	compareMeasurements(Measurement{Name: "BigEndian", Size: 4, Type: "int", Unsigned: false, Endianness: "big"}, config.Measurements["BigEndian"], test)
+	compareMeasurements(Measurement{Name: "LittleEndian", Size: 4, Type: "int", Unsigned: false, Endianness: "little"}, config.Measurements["LittleEndian"], test)
+	compareMeasurements(Measurement{Name: "Unsigned", Size: 4, Type: "int", Unsigned: true, Endianness: "big"}, config.Measurements["Unsigned"], test)
+	compareMeasurements(Measurement{Name: "SixteenBit", Size: 2, Type: "int", Unsigned: false, Endianness: "big"}, config.Measurements["SixteenBit"], test)
 
 	compareTelemetryPackets(TelemetryPacket{Name: "Default", Port: 10000, Measurements: []string{"Default", "Unsigned", "SixteenBit"}}, config.TelemetryPackets[0], test)
 	compareTelemetryPackets(TelemetryPacket{Name: "Endian", Port: 10001, Measurements: []string{"BigEndian", "LittleEndian"}}, config.TelemetryPackets[1], test)

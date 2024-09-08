@@ -1,8 +1,9 @@
 name: missing_meas_name_test
 
 measurements:
-  - size: 4
-    type: int
+    NoName:
+      size: 4
+      type: int
 
 
 telemetry_packets:

@@ -1,6 +1,7 @@
 name: no_telem_test
 
 measurements:
-  - name: Launch
+  Launch:
+    name: Launch
     size: 4
     type: int

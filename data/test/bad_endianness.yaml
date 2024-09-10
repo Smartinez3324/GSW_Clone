@@ -1,7 +1,8 @@
 name: missing_meas_name_test
 
 measurements:
-  - name: Bad
+  Bad:
+    name: Bad
     size: 4
     type: int
     endianness: Super Bad

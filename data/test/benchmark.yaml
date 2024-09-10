@@ -1,32 +1,39 @@
 name: benchmark
 
 measurements:
-  - name: UdpSendTimestamp
+  UdpSendTimestamp:
+    name: UdpSendTimestamp
     size: 8
     type: int
     unsigned: true
-  - name: ShmSendTimestamp
+  ShmSendTimestamp:
+    name: ShmSendTimestamp
     size: 8
     type: int
     unsigned: true
 
-  - name: EightBit
+  EightBit:
+    name: EightBit
     size: 1
     type: int
 
-  - name: SixteenBit
+  SixteenBit:
+    name: SixteenBit
     size: 2
     type: int
 
-  - name: ThirtyTwoBit
+  ThirtyTwoBit:
+    name: ThirtyTwoBit
     size: 4
     type: int
 
-  - name: SixtyFourBit
+  SixtyFourBit:
+    name: SixtyFourBit
     size: 8
     type: int
 
-  - name: OneKilobyte
+  OneKilobyte:
+    name: OneKilobyte
     size: 1008 # Not actually 1KB, but when we add the 16 total bytes from the timestamps, it will be
     type: int
 

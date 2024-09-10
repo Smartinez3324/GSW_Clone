@@ -52,31 +52,23 @@ func ParseConfig(filename string) (*Configuration, error) {
 	}
 
 	// Set default values for measurements if not specified
-	for i := range GswConfig.Measurements {
+	for k, _ := range GswConfig.Measurements {
 		// TODO: More strict checks of configuration and input handling
-		if GswConfig.Measurements[i].Name == "" {
+		if GswConfig.Measurements[k].Name == "" {
 			return nil, fmt.Errorf("Measurement name missing")
 		}
 
-		if GswConfig.Measurements[i].Endianness == "" {
-			entry := GswConfig.Measurements[i] // Workaround to avoid UnaddressableFieldAssign
+		if GswConfig.Measurements[k].Endianness == "" {
+			entry := GswConfig.Measurements[k] // Workaround to avoid UnaddressableFieldAssign
 			entry.Endianness = "big"           // Default to big endian
-			GswConfig.Measurements[i] = entry
-		} else if GswConfig.Measurements[i].Endianness != "little" && GswConfig.Measurements[i].Endianness != "big" {
-			return nil, fmt.Errorf("Endianess not specified as big or little got %s", GswConfig.Measurements[i].Endianness)
+			GswConfig.Measurements[k] = entry
+		} else if GswConfig.Measurements[k].Endianness != "little" && GswConfig.Measurements[k].Endianness != "big" {
+			return nil, fmt.Errorf("Endianess not specified as big or little got %s", GswConfig.Measurements[k].Endianness)
 		}
 	}
 
 	return &GswConfig, nil
 }
-
-// func FindMeasurementByName(measurements map[string]*Measurement, name string) (*Measurement, error) {
-// 	if val, ok := measurements[name]; ok {
-// 		return val, nil
-// 	}
-
-// 	return nil, fmt.Errorf("measurement '%s' not found", name)
-// }
 
 func GetPacketSize(packet TelemetryPacket) int {
 	size := 0

@@ -2,158 +2,195 @@ name: backplane
 
 type_definitions:
   AccelerometerData:
-    - name: X
-      size: 4
-      type: float
-    - name: Y
-      size: 4
-      type: float
-    - name: Z
-      size: 4
-      type: float
+      X:
+        name: X
+        size: 4
+        type: float
+      Y:
+        name: Y
+        size: 4
+        type: float
+      Z:
+        name: Z
+        size: 4
+        type: float
 
   BarometerData:
-    - name: Pressure
-      size: 4
-      type: float
-    - name: Temperature
-      size: 4
-      type: float
+      Pressure:
+        name: Pressure
+        size: 4
+        type: float
+      Temperature:
+        name: Temperature
+        size: 4
+        type: float
 
   GyroscopeData:
-    - name: X
-      size: 4
-      type: float
-    - name: Y
-      size: 4
-      type: float
-    - name: Z
-      size: 4
-      type: float
+      x:
+        name: X
+        size: 4
+        type: float
+      Y:
+        name: Y
+        size: 4
+        type: float
+      Z:
+        name: Z
+        size: 4
+        type: float
 
   MagnetometerData:
-    - name: X
-      size: 4
-      type: float
-    - name: Y
-      size: 4
-      type: float
-    - name: Z
-      size: 4
-      type: float
+      X:
+        name: X
+        size: 4
+        type: float
+      Y:
+        name: Y
+        size: 4
+        type: float
+      Z:
+        name: Z
+        size: 4
+        type: float
 
   ShuntData:
-    - name: Current
-      size: 4
-      type: float
-    - name: Voltage
-      size: 4
-      type: float
-    - name: Power
-      size: 4
-      type: float
+      Current:
+        name: Current
+        size: 4
+        type: float
+      Voltage:
+        name: Voltage
+        size: 4
+        type: float
+      Power:
+        name: Power
+        size: 4
+        type: float
 
   GnssPositioningData:
-    - name: Latitude
-      size: 8
-      type: double
-    - name: Longitude
-      size: 8
-      type: double
-    - name: Altitude
-      size: 4
-      type: float
+      Latitude:
+        name: Latitude
+        size: 8
+        type: double
+      Longitude:
+        name: Longitude
+        size: 8
+        type: double
+      Altitude:
+        name: Altitude
+        size: 4
+        type: float
 
   TemperatureData:
-    - name: Temperature
-      size: 4
-      type: float
+      Temperatrue:
+        name: Temperature
+        size: 4
+        type: float
 
 measurements:
-  - name: PRIM_ACCEL_X
-    size: 4
-    type: float
-    endianness: little
-  - name: PRIM_ACCEL_Y
-    size: 4
-    type: float
-    endianness: little
-  - name: PRIM_ACCEL_Z
-    size: 4
-    type: float
-    endianness: little
+    PRIM_ACCEL_X:
+      name: PRIM_ACCEL_X
+      size: 4
+      type: float
+      endianness: little
+    PRIM_ACCEL_Y:
+      name: PRIM_ACCEL_Y
+      size: 4
+      type: float
+      endianness: little
+    PRIM_ACCEL_Z:
+      name: PRIM_ACCEL_Z
+      size: 4
+      type: float
+      endianness: little
     
-  - name: SECO_ACCEL_X
-    size: 4
-    type: float
-    endianness: little
-  - name: SECO_ACCEL_Y
-    size: 4
-    type: float
-    endianness: little
-  - name: SECO_ACCEL_Z
-    size: 4
-    type: float
-    endianness: little
+    SECO_ACCEL_X:
+      name: SECO_ACCEL_X
+      size: 4
+      type: float
+      endianness: little
+    SECO_ACCEL_Y:
+      name: SECO_ACCEL_Y
+      size: 4
+      type: float
+      endianness: little
+    SECO_ACCEL_Z:
+      name: SECO_ACCEL_Z
+      size: 4
+      type: float
+      endianness: little
+
+    PRIM_BARO_PRESS:
+      name: PRIM_BARO_PRESS
+      size: 4
+      type: float
+      endianness: little
+    PRIM_BARO_TEMP:
+      name: PRIM_BARO_TEMP
+      size: 4
+      type: float
+      endianness: little
     
-  - name: PRIM_BARO_PRESS
-    size: 4
-    type: float
-    endianness: little
-  - name: PRIM_BARO_TEMP
-    size: 4
-    type: float
-    endianness: little
+    SECO_BARO_PRESS:
+      name: SECO_BARO_PRESS
+      size: 4
+      type: float
+      endianness: little
+    SECO_BARO_TEMP:
+      name: SECO_BARO_TEMP
+      size: 4
+      type: float
+      endianness: little
     
-  - name: SECO_BARO_PRESS
-    size: 4
-    type: float
-    endianness: little
-  - name: SECO_BARO_TEMP
-    size: 4
-    type: float
-    endianness: little
+    GYRO_X:
+      name: GYRO_X
+      size: 4
+      type: float
+      endianness: little
+    GYRO_Y:
+      name: GYRO_Y
+      size: 4
+      type: float
+      endianness: little
+    PRIM_ACCEL_Z:
+      name: PRIM_ACCEL_Z
+      size: 4
+      type: float
+      endianness: little
+    GYRO_Z:
+      name: GYRO_Z
+      size: 4
+      type: float
+      endianness: little
     
-  - name: GYRO_X
-    size: 4
-    type: float
-    endianness: little
-  - name: GYRO_Y
-    size: 4
-    type: float
-    endianness: little
-  - name: PRIM_ACCEL_Z
-    size: 4
-    type: float
-    endianness: little
-  - name: GYRO_Z
-    size: 4
-    type: float
-    endianness: little
+    MAGN_X:
+      name: MAGN_X
+      size: 4
+      type: float
+      endianness: little
+    MAGN_Y:
+      name: MAGN_Y
+      size: 4
+      type: float
+      endianness: little
+    PRIM_ACCEL_Z:
+      name: PRIM_ACCEL_Z
+      size: 4
+      type: float
+      endianness: little
+    MAGN_Z:
+      name: MAGN_Z
+      size: 4
+      type: float
+      endianness: little
     
-  - name: MAGN_X
-    size: 4
-    type: float
-    endianness: little
-  - name: MAGN_Y
-    size: 4
-    type: float
-    endianness: little
-  - name: PRIM_ACCEL_Z
-    size: 4
-    type: float
-    endianness: little
-  - name: MAGN_Z
-    size: 4
-    type: float
-    endianness: little
-    
-  - name: TEMPERATURE
-    size: 4
-    type: float
-    endianness: little
+    TEMPERATURE:
+      name: TEMPERATURE
+      size: 4
+      type: float
+      endianness: little
 telemetry_packets:
-  - name: SensorModule
+    name: SensorModule
     port: 12100
     measurements:
       - PRIM_BARO_PRESS

@@ -152,11 +152,6 @@ measurements:
       size: 4
       type: float
       endianness: little
-    PRIM_ACCEL_Z:
-      name: PRIM_ACCEL_Z
-      size: 4
-      type: float
-      endianness: little
     GYRO_Z:
       name: GYRO_Z
       size: 4
@@ -170,11 +165,6 @@ measurements:
       endianness: little
     MAGN_Y:
       name: MAGN_Y
-      size: 4
-      type: float
-      endianness: little
-    PRIM_ACCEL_Z:
-      name: PRIM_ACCEL_Z
       size: 4
       type: float
       endianness: little

@@ -52,7 +52,8 @@ func ParseConfig(filename string) (*Configuration, error) {
 	}
 
 	// Set default values for measurements if not specified
-	for k, _ := range GswConfig.Measurements {
+	for k, v := range GswConfig.Measurements {
+		fmt.Println(v)
 		// TODO: More strict checks of configuration and input handling
 		if GswConfig.Measurements[k].Name == "" {
 			return nil, fmt.Errorf("Measurement name missing")

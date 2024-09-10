@@ -31,6 +31,10 @@ type TelemetryPacket struct {
 // TODO: Make global safer
 var GswConfig Configuration
 
+func ResetConfig() {
+	GswConfig = Configuration{}
+}
+
 func ParseConfig(filename string) (*Configuration, error) {
 	data, err := os.ReadFile(filename)
 	if err != nil {
@@ -53,7 +57,7 @@ func ParseConfig(filename string) (*Configuration, error) {
 
 	// Set default values for measurements if not specified
 	for k, v := range GswConfig.Measurements {
-		fmt.Println(v)
+		fmt.Println(filename, ":", v)
 		// TODO: More strict checks of configuration and input handling
 		if GswConfig.Measurements[k].Name == "" {
 			return nil, fmt.Errorf("Measurement name missing")

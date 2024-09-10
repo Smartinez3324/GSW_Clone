@@ -3,20 +3,21 @@ package main
 import (
 	"encoding/binary"
 	"fmt"
-	"github.com/AarC10/GSW-V2/proc"
 	"os"
 	"os/signal"
 	"strings"
 	"syscall"
 	"time"
+
+	"github.com/AarC10/GSW-V2/proc"
 )
 
 func calculateTimestamps(startLine int, packet proc.TelemetryPacket, rcvChan chan []byte) {
 	var averageDiff uint64
 
-	udpTimestampMeas, err := proc.FindMeasurementByName(proc.GswConfig.Measurements, "UdpSendTimestamp")
-	if err != nil {
-		fmt.Printf("\t\tMeasurement 'UdpSendTimestamp' not found: %v\n", err)
+	udpTimestampMeas, ok := proc.GswConfig.Measurements["UdpSendTimestamp"]
+	if !ok {
+		fmt.Printf("\t\tMeasurement 'UdpSendTimestamp' not found\n")
 		return
 	}
 

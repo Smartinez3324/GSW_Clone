@@ -3,10 +3,11 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/AarC10/GSW-V2/proc"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"github.com/AarC10/GSW-V2/proc"
 )
 
 func printTelemetryPackets() {
@@ -16,9 +17,9 @@ func printTelemetryPackets() {
 		if len(packet.Measurements) > 0 {
 			fmt.Println("\tMeasurements:")
 			for _, measurementName := range packet.Measurements {
-				measurement, err := proc.FindMeasurementByName(proc.GswConfig.Measurements, measurementName)
-				if err != nil {
-					fmt.Printf("\t\tMeasurement '%s' not found: %v\n", measurementName, err)
+				measurement, ok := proc.GswConfig.Measurements[measurementName]
+				if !ok {
+					fmt.Printf("\t\tMeasurement '%s' not found\n", measurementName)
 					continue
 				}
 				fmt.Printf("\t\t%s\n", measurement.String())

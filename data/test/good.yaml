@@ -1,22 +1,27 @@
 name: vcm_test
 
 measurements:
-  - name: Default
+  Default:
+    name: Default
     size: 4
     type: int
-  - name: BigEndian
+  BigEndian:
+    name: BigEndian
     size: 4
     type: int
     endianness: big
-  - name: LittleEndian
+  LittleEndian:
+    name: LittleEndian
     size: 4
     type: int
     endianness: little
-  - name: Unsigned
+  Unsigned:
+    name: Unsigned
     size: 4
     type: int
     unsigned: true
-  - name: SixteenBit
+  SixteenBit:
+    name: SixteenBit
     size: 2
     type: int
 

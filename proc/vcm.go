@@ -2,15 +2,16 @@ package proc
 
 import (
 	"fmt"
-	"gopkg.in/yaml.v2"
 	"os"
 	"strings"
+
+	"gopkg.in/yaml.v2"
 )
 
 type Configuration struct {
-	Name             string            `yaml:"name"`
-	Measurements     []Measurement     `yaml:"measurements"`
-	TelemetryPackets []TelemetryPacket `yaml:"telemetry_packets"`
+	Name             string                 `yaml:"name"`
+	Measurements     map[string]Measurement `yaml:"measurements"`
+	TelemetryPackets []TelemetryPacket      `yaml:"telemetry_packets"`
 }
 
 type Measurement struct {
@@ -29,6 +30,10 @@ type TelemetryPacket struct {
 
 // TODO: Make global safer
 var GswConfig Configuration
+
+func ResetConfig() {
+	GswConfig = Configuration{}
+}
 
 func ParseConfig(filename string) (*Configuration, error) {
 	data, err := os.ReadFile(filename)
@@ -51,38 +56,30 @@ func ParseConfig(filename string) (*Configuration, error) {
 	}
 
 	// Set default values for measurements if not specified
-	for i := range GswConfig.Measurements {
+	for k := range GswConfig.Measurements {
 		// TODO: More strict checks of configuration and input handling
-		if GswConfig.Measurements[i].Name == "" {
+		if GswConfig.Measurements[k].Name == "" {
 			return nil, fmt.Errorf("Measurement name missing")
 		}
 
-		if GswConfig.Measurements[i].Endianness == "" {
-			GswConfig.Measurements[i].Endianness = "big" // Default to big endian
-		} else if GswConfig.Measurements[i].Endianness != "little" && GswConfig.Measurements[i].Endianness != "big" {
-			return nil, fmt.Errorf("Endianess not specified as big or little got %s", GswConfig.Measurements[i].Endianness)
+		if GswConfig.Measurements[k].Endianness == "" {
+			entry := GswConfig.Measurements[k] // Workaround to avoid UnaddressableFieldAssign
+			entry.Endianness = "big"           // Default to big endian
+			GswConfig.Measurements[k] = entry
+		} else if GswConfig.Measurements[k].Endianness != "little" && GswConfig.Measurements[k].Endianness != "big" {
+			return nil, fmt.Errorf("Endianess not specified as big or little got %s", GswConfig.Measurements[k].Endianness)
 		}
 	}
 
 	return &GswConfig, nil
 }
 
-// TODO: Map
-func FindMeasurementByName(measurements []Measurement, name string) (*Measurement, error) {
-	for _, meas := range measurements {
-		if meas.Name == name {
-			return &meas, nil
-		}
-	}
-	return nil, fmt.Errorf("measurement '%s' not found", name)
-}
-
 func GetPacketSize(packet TelemetryPacket) int {
 	size := 0
 	for _, measurementName := range packet.Measurements {
-		measurement, err := FindMeasurementByName(GswConfig.Measurements, measurementName)
-		if err != nil {
-			fmt.Printf("\t\tMeasurement '%s' not found: %v\n", measurementName, err)
+		measurement, ok := GswConfig.Measurements[measurementName]
+		if !ok {
+			fmt.Printf("\t\tMeasurement '%s' not found\n", measurementName)
 			continue
 		}
 		size += measurement.Size

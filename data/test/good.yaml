@@ -24,7 +24,7 @@ measurements:
     name: SixteenBit
     size: 2
     type: int
-# Comment to fill empty line
+
 telemetry_packets:
   - name: Default
     port: 10000

@@ -2,13 +2,14 @@ package main
 
 import (
 	"fmt"
-	"github.com/AarC10/GSW-V2/lib/tlm"
-	"github.com/AarC10/GSW-V2/lib/util"
-	"github.com/AarC10/GSW-V2/proc"
 	"os"
 	"os/signal"
 	"strings"
 	"syscall"
+
+	"github.com/AarC10/GSW-V2/lib/tlm"
+	"github.com/AarC10/GSW-V2/lib/util"
+	"github.com/AarC10/GSW-V2/proc"
 )
 
 func buildString(packet proc.TelemetryPacket, data []byte, startLine int) string {
@@ -19,9 +20,9 @@ func buildString(packet proc.TelemetryPacket, data []byte, startLine int) string
 	// Format: MeasurementName: Value (Base-10) [(Base-16)]
 	sb.WriteString(fmt.Sprintf("\033[%d;0H", startLine))
 	for _, measurementName := range packet.Measurements {
-		measurement, err := proc.FindMeasurementByName(proc.GswConfig.Measurements, measurementName)
-		if err != nil {
-			fmt.Printf("\t\tMeasurement '%s' not found: %v\n", measurementName, err)
+		measurement, ok := proc.GswConfig.Measurements[measurementName]
+		if !ok {
+			fmt.Printf("\t\tMeasurement '%s' not found\n", measurementName)
 			continue
 		}
 

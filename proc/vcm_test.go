@@ -107,16 +107,16 @@ func TestParseConfigBadEndianness(test *testing.T) {
 
 func TestFindMeasurementByName(test *testing.T) {
 	config, _ := ParseConfig(TEST_DATA_DIR + "good.yaml")
-	measurement, err := FindMeasurementByName(config.Measurements, "Default")
-	if err != nil {
-		test.Errorf("Expected nil, got %v", err)
+	measurement, ok := config.Measurements["Default"]
+	if !ok {
+		test.Errorf("Expected true, got %v", ok)
 	}
 
-	compareMeasurements(Measurement{Name: "Default", Size: 4, Type: "int", Unsigned: false, Endianness: "big"}, *measurement, test)
+	compareMeasurements(Measurement{Name: "Default", Size: 4, Type: "int", Unsigned: false, Endianness: "big"}, measurement, test)
 
-	measurement, err = FindMeasurementByName(config.Measurements, "Missing")
-	if err == nil {
-		test.Errorf("Expected error, got nil")
+	measurement, ok = config.Measurements["Missing"]
+	if ok {
+		test.Errorf("Expected false, got %v", ok)
 	}
 }
 

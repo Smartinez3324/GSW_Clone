@@ -70,21 +70,20 @@ func ParseConfig(filename string) (*Configuration, error) {
 	return &GswConfig, nil
 }
 
-// TODO: Map
-func FindMeasurementByName(measurements map[string]Measurement, name string) (*Measurement, error) {
-	if val, ok := measurements[name]; ok {
-		return &val, nil
-	}
+// func FindMeasurementByName(measurements map[string]*Measurement, name string) (*Measurement, error) {
+// 	if val, ok := measurements[name]; ok {
+// 		return val, nil
+// 	}
 
-	return nil, fmt.Errorf("measurement '%s' not found", name)
-}
+// 	return nil, fmt.Errorf("measurement '%s' not found", name)
+// }
 
 func GetPacketSize(packet TelemetryPacket) int {
 	size := 0
 	for _, measurementName := range packet.Measurements {
-		measurement, err := FindMeasurementByName(GswConfig.Measurements, measurementName)
-		if err != nil {
-			fmt.Printf("\t\tMeasurement '%s' not found: %v\n", measurementName, err)
+		measurement, ok := GswConfig.Measurements[measurementName]
+		if !ok {
+			fmt.Printf("\t\tMeasurement '%s' not found\n", measurementName)
 			continue
 		}
 		size += measurement.Size

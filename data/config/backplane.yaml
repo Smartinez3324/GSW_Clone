@@ -180,7 +180,7 @@ measurements:
       type: float
       endianness: little
 telemetry_packets:
-    name: SensorModule
+  - name: SensorModule
     port: 12100
     measurements:
       - PRIM_BARO_PRESS

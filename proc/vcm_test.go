@@ -1,7 +1,6 @@
 package proc
 
 import (
-	"fmt"
 	"testing"
 )
 
@@ -117,14 +116,14 @@ func TestParseConfigBadEndianness(test *testing.T) {
 
 func TestFindMeasurementByName(test *testing.T) {
 	test.Cleanup(resetState)
-	config, err := ParseConfig(TEST_DATA_DIR + "good.yaml")
-	fmt.Println("Parsed:", config, "Error:", err)
+	config, _ := ParseConfig(TEST_DATA_DIR + "good.yaml")
+
 	measurement, ok := config.Measurements["Default"]
-	fmt.Println("Accessed")
+
 	if !ok {
 		test.Errorf("Expected true, got %v", ok)
 	}
-	fmt.Println("Checked:", measurement)
+
 	compareMeasurements(Measurement{Name: "Default", Size: 4, Type: "int", Unsigned: false, Endianness: "big"}, measurement, test)
 
 	measurement, ok = config.Measurements["Missing"]

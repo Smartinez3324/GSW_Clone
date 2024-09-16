@@ -12,7 +12,7 @@ import (
 	"github.com/AarC10/GSW-V2/proc"
 )
 
-func buildString(packet proc.TelemetryPacket, data []byte, startLine int) string {
+func buildString(packet tlm.TelemetryPacket, data []byte, startLine int) string {
 	var sb strings.Builder
 	offset := 0
 
@@ -26,7 +26,10 @@ func buildString(packet proc.TelemetryPacket, data []byte, startLine int) string
 			continue
 		}
 
-		value := tlm.InterpretMeasurementValue(measurement, data[offset:offset+measurement.Size])
+		value, err := tlm.InterpretMeasurementValue(measurement, data[offset:offset+measurement.Size])
+		if err != nil {
+			continue
+		}
 
 		sb.WriteString(fmt.Sprintf("%s: %v [%s]          \n", measurementName, value, util.Base16String(data[offset:offset+measurement.Size], 1)))
 		offset += measurement.Size
@@ -35,7 +38,7 @@ func buildString(packet proc.TelemetryPacket, data []byte, startLine int) string
 	return sb.String()
 }
 
-func printTelemetryPacket(startLine int, packet proc.TelemetryPacket, rcvChan chan []byte) {
+func printTelemetryPacket(startLine int, packet tlm.TelemetryPacket, rcvChan chan []byte) {
 	fmt.Print(buildString(packet, make([]byte, proc.GetPacketSize(packet)), startLine))
 
 	for {

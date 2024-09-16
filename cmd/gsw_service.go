@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/AarC10/GSW-V2/lib/db"
+	"github.com/AarC10/GSW-V2/lib/tlm"
 	"os"
 	"os/signal"
 	"syscall"
@@ -30,15 +32,16 @@ func printTelemetryPackets() {
 	}
 }
 
-func vcmInitialize() {
+func vcmInitialize() error {
 	// TODO: Need to set up configuration stuff
 	_, err := proc.ParseConfig("data/config/backplane.yaml")
 	if err != nil {
 		fmt.Printf("Error parsing YAML: %v\n", err)
-		return
+		return err
 	}
 
 	printTelemetryPackets()
+	return nil
 }
 
 func decomInitialize(ctx context.Context) map[int]chan []byte {
@@ -48,14 +51,33 @@ func decomInitialize(ctx context.Context) map[int]chan []byte {
 		finalOutputChannel := make(chan []byte)
 		channelMap[packet.Port] = finalOutputChannel
 
-		go func(packet proc.TelemetryPacket, ch chan []byte) {
-			proc.TelemetryPacketWriter(packet)
+		go func(packet tlm.TelemetryPacket, ch chan []byte) {
+			proc.TelemetryPacketWriter(packet, finalOutputChannel)
 			<-ctx.Done()
 			close(ch)
 		}(packet, finalOutputChannel)
 	}
 
 	return channelMap
+}
+
+func dbInitialize(ctx context.Context, channelMap map[int]chan []byte) error {
+	dbHandler := db.InfluxDBV1Handler{}
+	err := dbHandler.Initialize()
+	if err != nil {
+		fmt.Println("Warning. Telemetry packets will not be published to database")
+		return err
+	}
+
+	for _, packet := range proc.GswConfig.TelemetryPackets {
+		go func(dbHandler db.Handler, packet tlm.TelemetryPacket, ch chan []byte) {
+			proc.DatabaseWriter(dbHandler, packet, ch)
+			<-ctx.Done()
+			close(ch)
+		}(&dbHandler, packet, channelMap[packet.Port])
+	}
+
+	return nil
 }
 
 func main() {
@@ -72,8 +94,13 @@ func main() {
 		cancel()
 	}()
 
-	vcmInitialize()
-	decomInitialize(ctx)
+	if vcmInitialize() != nil {
+		fmt.Println("Exiting GSW")
+		return
+	}
+
+	channelMap := decomInitialize(ctx)
+	dbInitialize(ctx, channelMap)
 
 	// Wait for context cancellation or signal handling
 	<-ctx.Done()

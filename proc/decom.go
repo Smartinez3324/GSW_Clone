@@ -3,20 +3,21 @@ package proc
 import (
 	"fmt"
 	"github.com/AarC10/GSW-V2/lib/ipc"
+	"github.com/AarC10/GSW-V2/lib/tlm"
 	"net"
 	"strconv"
 )
 
-func getIpcShmHandler(packet TelemetryPacket, write bool) (*ipc.IpcShmHandler, error) {
+func getIpcShmHandler(packet tlm.TelemetryPacket, write bool) (*ipc.IpcShmHandler, error) {
 	handler, err := ipc.CreateIpcShmHandler(strconv.Itoa(packet.Port), GetPacketSize(packet), write)
 	if err != nil {
-		return nil, fmt.Errorf("Error creating shared memory handler: %v", err)
+		return nil, fmt.Errorf("error creating shared memory handler: %v", err)
 	}
 
 	return handler, nil
 }
 
-func TelemetryPacketWriter(packet TelemetryPacket) {
+func TelemetryPacketWriter(packet tlm.TelemetryPacket, outChannel chan []byte) {
 	packetSize := GetPacketSize(packet)
 	shmWriter, _ := getIpcShmHandler(packet, true)
 	if shmWriter == nil {
@@ -59,13 +60,20 @@ func TelemetryPacketWriter(packet TelemetryPacket) {
 			if err != nil {
 				fmt.Printf("Error writing to shared memory: %v\n", err)
 			}
+
+			select {
+			case outChannel <- buffer:
+				break
+			default:
+				break
+			}
 		} else {
 			fmt.Printf("Received packet of incorrect size. Expected: %d, Received: %d\n", packetSize, n)
 		}
 	}
 }
 
-func TelemetryPacketReader(packet TelemetryPacket, outChannel chan []byte) {
+func TelemetryPacketReader(packet tlm.TelemetryPacket, outChannel chan []byte) {
 	procReader, err := getIpcShmHandler(packet, false)
 	if err != nil {
 		fmt.Printf("Error creating proc handler: %v\n", err)

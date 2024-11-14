@@ -88,6 +88,52 @@ type_definitions:
         type: float
 
 measurements:
+    CURR_BATT:
+      name: CURR_BATT
+      size: 4
+      type: float
+      endianness: little
+    VOLT_BATT:
+      name: VOLT_BATT
+      size: 4
+      type: float
+      endianness: little
+    PWER_BATT:
+      name: PWER_BATT
+      size: 4
+      type: float
+      endianness: little
+    CURR_3V3:
+      name: CURR_3V3
+      size: 4
+      type: float
+      endianness: little
+    VOLT_3V3:
+      name: VOLT_3V3
+      size: 4
+      type: float
+      endianness: little
+    PWER_3V3:
+      name: PWER_3V3
+      size: 4
+      type: float
+      endianness: little
+    CURR_5V0:
+      name: CURR_5V0
+      size: 4
+      type: float
+      endianness: little
+    VOLT_5V0:
+      name: VOLT_5V0
+      size: 4
+      type: float
+      endianness: little
+    PWER_5V0:
+      name: PWER_5V0
+      size: 4
+      type: float
+      endianness: little
+
     ADX_ACCEL_X:
       name: ADX_ACCEL_X
       size: 4
@@ -180,6 +226,19 @@ measurements:
       type: float
       endianness: little
 telemetry_packets:
+  - name: PowerModule
+    port: 11000
+    measurements:
+      - VOLT_BATT
+      - CURR_BATT
+      - PWER_BATT
+      - VOLT_3V3
+      - CURR_3V3
+      - PWER_3V3
+      - VOLT_5V0
+      - CURR_5V0
+      - PWER_5V0
+
   - name: SensorModule
     port: 12100
     measurements:

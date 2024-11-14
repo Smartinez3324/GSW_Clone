@@ -9,6 +9,7 @@ import (
 
 	"github.com/AarC10/GSW-V2/lib/tlm"
 	"github.com/AarC10/GSW-V2/lib/util"
+	"github.com/AarC10/GSW-V2/lib/ipc"
 	"github.com/AarC10/GSW-V2/proc"
 )
 
@@ -49,7 +50,18 @@ func printTelemetryPacket(startLine int, packet tlm.TelemetryPacket, rcvChan cha
 }
 
 func main() {
-	_, err := proc.ParseConfig("data/config/backplane.yaml")
+	configReader, err := ipc.CreateIpcShmReader("config")
+	if err != nil {
+		fmt.Println("*** Error accessing config file. Make sure the GSW service is running. ***")
+		fmt.Printf("(%v)\n", err)
+		return
+	}
+	data, err := configReader.ReadNoTimestamp()
+	if err != nil {
+		fmt.Printf("Error reading shared memory: %v\n", err)
+		return
+	}
+	_, err = proc.ParseConfigBytes(data)
 	if err != nil {
 		fmt.Printf("Error parsing YAML: %v\n", err)
 		return

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/AarC10/GSW-V2/lib/db"
 	"github.com/AarC10/GSW-V2/lib/tlm"
+	"github.com/AarC10/GSW-V2/lib/ipc"
 	"os"
 	"os/signal"
 	"syscall"
@@ -32,16 +33,30 @@ func printTelemetryPackets() {
 	}
 }
 
-func vcmInitialize() error {
-	// TODO: Need to set up configuration stuff
-	_, err := proc.ParseConfig("data/config/backplane.yaml")
+func vcmInitialize() (*ipc.IpcShmHandler, error) {
+	data, err := os.ReadFile("data/config/backplane.yaml")
+	if err != nil {
+		fmt.Printf("Error reading YAML file: %v\n", err)
+		return nil, err
+	}
+	_, err = proc.ParseConfigBytes(data)
 	if err != nil {
 		fmt.Printf("Error parsing YAML: %v\n", err)
-		return err
+		return nil, err
+	}
+	configWriter, err := ipc.CreateIpcShmHandler("config", len(data), true)
+	if err != nil {
+		fmt.Printf("Error creating shared memory handler: %v\n", err)
+		return nil, err
+	}
+	if configWriter.Write(data) != nil {
+		fmt.Printf("Error writing config to shared memory: %v\n", err)
+		configWriter.Cleanup()
+		return nil, err
 	}
 
 	printTelemetryPackets()
-	return nil
+	return configWriter, nil
 }
 
 func decomInitialize(ctx context.Context) map[int]chan []byte {
@@ -94,10 +109,12 @@ func main() {
 		cancel()
 	}()
 
-	if vcmInitialize() != nil {
+	configWriter, err := vcmInitialize()
+	if err != nil {
 		fmt.Println("Exiting GSW")
 		return
 	}
+	defer configWriter.Cleanup()
 
 	channelMap := decomInitialize(ctx)
 	dbInitialize(ctx, channelMap)

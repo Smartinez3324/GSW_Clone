@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/spf13/viper"
 	"context"
 	"fmt"
 	"github.com/AarC10/GSW-V2/lib/db"
@@ -9,6 +10,8 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"errors"
+	"flag"
 
 	"github.com/AarC10/GSW-V2/proc"
 )
@@ -33,8 +36,13 @@ func printTelemetryPackets() {
 	}
 }
 
-func vcmInitialize() (*ipc.IpcShmHandler, error) {
-	data, err := os.ReadFile("data/config/backplane.yaml")
+func vcmInitialize(config *viper.Viper) (*ipc.IpcShmHandler, error) {
+	if !config.IsSet("telemetry_config") {
+		err := errors.New("Error: Telemetry config filepath is not set in GSW config.")
+		fmt.Printf("%v\n", err)
+		return nil, err
+	}
+	data, err := os.ReadFile(config.GetString("telemetry_config"))
 	if err != nil {
 		fmt.Printf("Error reading YAML file: %v\n", err)
 		return nil, err
@@ -44,13 +52,13 @@ func vcmInitialize() (*ipc.IpcShmHandler, error) {
 		fmt.Printf("Error parsing YAML: %v\n", err)
 		return nil, err
 	}
-	configWriter, err := ipc.CreateIpcShmHandler("config", len(data), true)
+	configWriter, err := ipc.CreateIpcShmHandler("telemetry-config", len(data), true)
 	if err != nil {
 		fmt.Printf("Error creating shared memory handler: %v\n", err)
 		return nil, err
 	}
 	if configWriter.Write(data) != nil {
-		fmt.Printf("Error writing config to shared memory: %v\n", err)
+		fmt.Printf("Error writing telemetry config to shared memory: %v\n", err)
 		configWriter.Cleanup()
 		return nil, err
 	}
@@ -95,7 +103,24 @@ func dbInitialize(ctx context.Context, channelMap map[int]chan []byte) error {
 	return nil
 }
 
+func readConfig() *viper.Viper {
+	config := viper.New()
+	configFilepath := flag.String("c", "gsw_service", "name of config file")
+	flag.Parse()
+	config.SetConfigName(*configFilepath)
+	config.SetConfigType("yaml")
+	config.AddConfigPath("data/config/")
+	err := config.ReadInConfig()
+	if err != nil {
+		panic(fmt.Errorf("Error reading GSW config: %w", err))
+	}
+	return config
+}
+
 func main() {
+	// Read gsw_service config
+	config := readConfig()
+
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -109,7 +134,7 @@ func main() {
 		cancel()
 	}()
 
-	configWriter, err := vcmInitialize()
+	configWriter, err := vcmInitialize(config)
 	if err != nil {
 		fmt.Println("Exiting GSW")
 		return

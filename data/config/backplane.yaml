@@ -240,7 +240,7 @@ telemetry_packets:
       - PWER_5V0
 
   - name: SensorModule
-    port: 12100
+    port: 13100
     measurements:
       - PRESS_MS5611
       - TEMP_MS5611

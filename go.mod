@@ -15,6 +15,7 @@ require (
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/influxdata/line-protocol v0.0.0-20200327222509-2487e7298839 // indirect
 	github.com/magiconair/properties v1.8.7 // indirect
+	github.com/matoous/godox v1.1.0 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/oapi-codegen/runtime v1.0.0 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.2 // indirect

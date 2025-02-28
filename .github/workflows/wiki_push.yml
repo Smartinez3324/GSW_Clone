@@ -26,7 +26,7 @@ jobs:
           rm -rf wiki/* 
           mkdir -p wiki
           for dir in $(go list -f '{{.Dir}}' ./... | grep -v "cmd"); do
-          gomarkdoc --output "./wiki/$(basename $dir).md" $dir
+            gomarkdoc --output "./wiki/$(basename $dir).md" $dir
           done
 
       # Uploads wiki directory to github wiki page
